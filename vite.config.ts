@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/registral/',
   plugins: [
     tailwindcss(),
     react(),
@@ -55,8 +56,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/registral/',
+        start_url: '/registral/',
         icons: [
           {
             src: 'favicon.svg',
