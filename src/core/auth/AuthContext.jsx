@@ -231,7 +231,11 @@ export function AuthProvider({ children }) {
   // ── signOut ───────────────────────────────────────────────
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Network error on signOut — clear local state anyway
+    }
     dispatch({ type: 'SIGN_OUT' })
   }, [])
 

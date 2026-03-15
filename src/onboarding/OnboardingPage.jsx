@@ -42,6 +42,16 @@ export default function OnboardingPage() {
   const navigate = useNavigate()
   const [tenantLoading, setTenantLoading] = useState(!tenant)
 
+  // ALL hooks MUST be declared before any conditional return
+  const initialStep = tenant?.rubro
+    ? Math.min(tenant.settings?.onboarding_step ?? 2, 4)
+    : 1
+
+  const [step, setStep]                       = useState(initialStep)
+  const [selectedRubro, setSelectedRubro]     = useState(tenant?.rubro ?? null)
+  const [provisioning, setProvisioning]       = useState(false)
+  const [provisionError, setProvisionError]   = useState(null)
+
   // Si no hay tenant, intentar crearlo (el registro pudo fallar antes)
   useEffect(() => {
     if (!tenant && user) {
@@ -72,17 +82,52 @@ export default function OnboardingPage() {
     }
   }, [tenant, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Si tiene rubro y step guardado, retomar desde ese step
-  const initialStep = tenant?.rubro
-    ? Math.min(tenant.settings?.onboarding_step ?? 2, 4)
-    : 1
+  // ── Handlers (hooks, must be before returns) ───────────
 
-  const [step, setStep]             = useState(initialStep)
-  const [selectedRubro, setSelectedRubro] = useState(tenant?.rubro ?? null)
-  const [provisioning, setProvisioning]   = useState(false)
-  const [provisionError, setProvisionError] = useState(null)
+  const handleRubroSelect = useCallback(async (rubro) => {
+    setSelectedRubro(rubro)
+    setProvisionError(null)
+    setProvisioning(true)
 
-  // ── Loading si no hay tenant aún ────────────────────────
+    try {
+      const modules = MODULES_BY_RUBRO[rubro] ?? []
+      await provisionRubro({
+        tenantId:      tenant.id,
+        rubro,
+        presetModules: modules,
+      })
+
+      updateTenant({ rubro, settings: { ...tenant.settings, onboarding_step: 2 } })
+      setStep(2)
+      setProvisioning(false)
+      saveOnboardingStep(tenant.id, 2, { ...tenant.settings }).catch(() => {})
+    } catch (err) {
+      setProvisionError(err.message)
+      setProvisioning(false)
+    }
+  }, [tenant, updateTenant])
+
+  const handleBusinessNext = useCallback(async () => {
+    await saveOnboardingStep(tenant.id, 3, tenant.settings)
+    setStep(3)
+  }, [tenant])
+
+  const handleDemoStart = useCallback(async () => {
+    await saveOnboardingStep(tenant.id, 4, tenant.settings)
+    setStep(4)
+  }, [tenant])
+
+  const handleTourFinish = useCallback(async () => {
+    try {
+      const updated = await completeOnboarding(tenant.id, tenant.settings)
+      updateTenant({ settings: updated.settings })
+    } catch (err) {
+      console.warn('[OnboardingPage] No se pudo marcar onboarding completo:', err.message)
+    }
+    navigate('/dashboard', { replace: true })
+  }, [tenant, updateTenant, navigate])
+
+  // ── Conditional renders (AFTER all hooks) ──────────────
 
   if (!tenant || tenantLoading) {
     return (
@@ -99,65 +144,6 @@ export default function OnboardingPage() {
       </OnboardingShell>
     )
   }
-
-  // ── Paso 1 → selección de rubro ─────────────────────────
-
-  const handleRubroSelect = useCallback(async (rubro) => {
-    setSelectedRubro(rubro)
-    setProvisionError(null)
-    setProvisioning(true)
-
-    try {
-      // Provisionar el rubro: crea sequences + modules_access
-      const modules = MODULES_BY_RUBRO[rubro] ?? []
-      await provisionRubro({
-        tenantId:      tenant.id,
-        rubro,
-        presetModules: modules,
-      })
-
-      // Actualizar el tenant en el contexto local
-      updateTenant({ rubro, settings: { ...tenant.settings, onboarding_step: 2 } })
-
-      // Avanzar al paso 2
-      setStep(2)
-      setProvisioning(false)
-
-      // Guardar paso en background (no bloquea)
-      saveOnboardingStep(tenant.id, 2, { ...tenant.settings }).catch(() => {})
-    } catch (err) {
-      setProvisionError(err.message)
-      setProvisioning(false)
-    }
-  }, [tenant, updateTenant])
-
-  // ── Paso 2 → siguiente ──────────────────────────────────
-
-  const handleBusinessNext = useCallback(async () => {
-    await saveOnboardingStep(tenant.id, 3, tenant.settings)
-    setStep(3)
-  }, [tenant])
-
-  // ── Paso 3 → empezar ────────────────────────────────────
-
-  const handleDemoStart = useCallback(async () => {
-    await saveOnboardingStep(tenant.id, 4, tenant.settings)
-    setStep(4)
-  }, [tenant])
-
-  // ── Paso 4 → terminar onboarding ────────────────────────
-
-  const handleTourFinish = useCallback(async () => {
-    try {
-      const updated = await completeOnboarding(tenant.id, tenant.settings)
-      updateTenant({ settings: updated.settings })
-    } catch (err) {
-      console.warn('[OnboardingPage] No se pudo marcar onboarding completo:', err.message)
-    }
-    navigate('/dashboard', { replace: true })
-  }, [tenant, updateTenant, navigate])
-
-  // ── Estado de provisioning (loading entre paso 1 y 2) ───
 
   if (provisioning) {
     return (
@@ -177,15 +163,13 @@ export default function OnboardingPage() {
           <div className="text-center">
             <p className="text-lg font-bold text-gray-900">Configurando tu sistema</p>
             <p className="mt-1 text-sm text-gray-500">
-              Estamos preparando todo para tu corralón. Un momento...
+              Estamos preparando todo para tu negocio. Un momento...
             </p>
           </div>
         </div>
       </OnboardingShell>
     )
   }
-
-  // ── Error de provisioning ────────────────────────────────
 
   if (provisionError) {
     return (
@@ -209,12 +193,9 @@ export default function OnboardingPage() {
     )
   }
 
-  // ── Paso 4: GuidedTour usa overlay sobre toda la pantalla ─
-
   if (step === 4) {
     return (
       <>
-        {/* Fondo vacío del dashboard (el tour va encima) */}
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <p className="text-gray-300 text-sm">Tu dashboard está listo</p>
         </div>
@@ -281,7 +262,6 @@ function OnboardingShell({ step, children }) {
       {/* Progress steps */}
       {step <= 3 && (
         <div className="px-4 pt-4 pb-2">
-          {/* Barra de progreso */}
           <div className="flex gap-1 mb-2">
             {[1, 2, 3].map((s) => (
               <div
@@ -292,7 +272,6 @@ function OnboardingShell({ step, children }) {
               />
             ))}
           </div>
-          {/* Label del paso actual */}
           <p className="text-xs text-gray-400">
             Paso {step} de 3 · {STEP_LABELS[step - 1]}
           </p>

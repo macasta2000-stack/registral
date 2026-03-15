@@ -10,7 +10,7 @@
  * Configuración: preset del tenant via useDashboard/useVocabulary.
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AreaChart,

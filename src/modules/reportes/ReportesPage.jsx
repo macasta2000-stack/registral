@@ -64,7 +64,7 @@ function useReportData() {
       if (!tenantId) return null
       return db.products
         .where('[tenant_id+is_active]')
-        .equals([tenantId, 1])
+        .equals([tenantId, true])
         .toArray()
         .catch(() => db.products.where('tenant_id').equals(tenantId).toArray())
     },

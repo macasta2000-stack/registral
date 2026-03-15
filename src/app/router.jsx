@@ -153,18 +153,7 @@ UpgradeScreen.propTypes = {
 }
 
 function NotFoundPage() {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-        <span className="text-3xl">🔍</span>
-      </div>
-      <h2 className="text-lg font-bold text-gray-900">Página no encontrada</h2>
-      <p className="mt-2 text-sm text-gray-500">
-        La ruta que buscás no existe o fue movida.
-      </p>
-      <Navigate to="/dashboard" replace />
-    </div>
-  )
+  return <Navigate to="/dashboard" replace />
 }
 
 // ─────────────────────────────────────────────────────────────
