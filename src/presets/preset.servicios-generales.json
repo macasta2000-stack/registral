@@ -23,7 +23,10 @@
     "balance": "Saldo pendiente",
     "schedule": "Trabajo programado",
     "schedules": "Agenda de trabajos",
-    "dashboard_title": "Panel de servicios"
+    "dashboard_title": "Panel de servicios",
+    "presupuestos_label": "Presupuestos",
+    "caja_label": "Cobros",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [

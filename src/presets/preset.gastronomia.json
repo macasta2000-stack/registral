@@ -23,7 +23,11 @@
     "balance": "Cuenta",
     "schedule": "Reserva",
     "schedules": "Reservas",
-    "dashboard_title": "Panel del restaurante"
+    "dashboard_title": "Panel del restaurante",
+    "mesas_label": "Mesas",
+    "comandas_label": "Comandas",
+    "caja_label": "Caja",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [

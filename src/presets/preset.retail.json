@@ -23,15 +23,16 @@
     "balance": "Saldo",
     "schedule": "Tarea",
     "schedules": "Tareas",
-    "dashboard_title": "Panel del comercio"
+    "dashboard_title": "Panel del comercio",
+    "caja_label": "Caja",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [
     "dashboard",
-    "productos",
-    "ventas",
-    "clientes",
     "stock",
+    "remitos",
+    "clientes",
     "caja",
     "reportes"
   ],
@@ -43,7 +44,6 @@
     { "id": "honorarios",       "reason": "Exclusivo de Abogacía" },
     { "id": "historia_clinica", "reason": "Exclusivo de Medicina" },
     { "id": "turnos",           "reason": "Exclusivo de Medicina" },
-    { "id": "remitos",          "reason": "Exclusivo de Corralón" },
     { "id": "agenda_entregas",  "reason": "Exclusivo de Corralón" },
     { "id": "cuenta_corriente", "reason": "Exclusivo de Corralón" }
   ],
@@ -166,7 +166,7 @@
   ],
 
   "plan_limits": {
-    "basico":  { "modules": ["dashboard", "productos", "ventas", "stock", "caja"], "max_entities": 50,  "max_products": 200, "max_transactions_month": 500, "max_users": 2 },
+    "basico":  { "modules": ["dashboard", "stock", "remitos", "clientes", "caja"], "max_entities": 50,  "max_products": 200, "max_transactions_month": 500, "max_users": 2 },
     "pro":     { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": 8 },
     "agencia": { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
   },

@@ -177,6 +177,20 @@ const ALL_MODULES = [
     labelKey: 'transactions',
     labelFallback: 'Consultas',
   },
+  {
+    id:       'agenda',
+    path:     '/agenda',
+    icon:     '📅',
+    labelKey: 'schedules',
+    labelFallback: 'Agenda',
+  },
+  {
+    id:       'partes',
+    path:     '/partes',
+    icon:     '👤',
+    labelKey: 'partes_label',
+    labelFallback: 'Partes',
+  },
 ]
 
 // ─────────────────────────────────────────────────────────────

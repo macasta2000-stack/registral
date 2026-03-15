@@ -23,7 +23,9 @@
     "balance": "Saldo de honorarios",
     "schedule": "Vencimiento",
     "schedules": "Vencimientos",
-    "dashboard_title": "Panel del estudio jurídico"
+    "dashboard_title": "Panel del estudio jurídico",
+    "partes_label": "Partes",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [

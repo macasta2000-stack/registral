@@ -23,7 +23,9 @@
     "balance": "Saldo",
     "schedule": "Turno",
     "schedules": "Turnos",
-    "dashboard_title": "Panel de salud"
+    "dashboard_title": "Panel de salud",
+    "historia_clinica_label": "Historia clínica",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [

@@ -23,7 +23,10 @@
     "balance": "Saldo en cuenta corriente",
     "schedule": "Entrega",
     "schedules": "Entregas",
-    "dashboard_title": "Panel del corralón"
+    "dashboard_title": "Panel del corralón",
+    "cuenta_corriente_label": "Cuenta corriente",
+    "caja_label": "Caja",
+    "reportes_label": "Reportes"
   },
 
   "modules_enabled": [
