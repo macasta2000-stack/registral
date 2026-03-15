@@ -262,17 +262,27 @@ export function AuthProvider({ children }) {
   // ── refreshTenant ─────────────────────────────────────────
 
   const refreshTenant = useCallback(async () => {
-    if (!state.tenant?.id) return
-    const { data, error } = await supabase
-      .from('tenants')
-      .select('*')
-      .eq('id', state.tenant.id)
-      .single()
+    if (state.tenant?.id) {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', state.tenant.id)
+        .single()
 
-    if (!error && data) {
-      dispatch({ type: 'UPDATE_TENANT', payload: data })
+      if (!error && data) {
+        dispatch({ type: 'UPDATE_TENANT', payload: data })
+      }
+    } else if (state.user?.id) {
+      // No tenant yet — try to fetch from user row
+      const { userRow, tenant } = await fetchUserAndTenant(state.user.id)
+      if (tenant) {
+        dispatch({
+          type: 'SET_SESSION',
+          payload: { user: state.user, tenant, userRole: userRow?.role ?? 'owner' },
+        })
+      }
     }
-  }, [state.tenant?.id])
+  }, [state.tenant?.id, state.user?.id])
 
   const value = {
     user:          state.user,

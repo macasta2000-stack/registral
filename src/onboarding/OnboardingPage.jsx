@@ -38,8 +38,31 @@ const MODULES_BY_RUBRO = {
 }
 
 export default function OnboardingPage() {
-  const { tenant, updateTenant, user } = useAuth()
+  const { tenant, updateTenant, user, refreshTenant } = useAuth()
   const navigate = useNavigate()
+  const [tenantLoading, setTenantLoading] = useState(!tenant)
+
+  // Si no hay tenant, intentar crearlo (el registro pudo fallar antes)
+  useState(() => {
+    if (!tenant && user) {
+      import('../core/supabase/queries/provisionTenant').then(({ createTenantAndUser }) => {
+        createTenantAndUser({
+          userId: user.id,
+          email: user.email,
+          fullName: user.user_metadata?.full_name || '',
+        })
+          .then((newTenant) => {
+            updateTenant(newTenant)
+            setTenantLoading(false)
+          })
+          .catch(async () => {
+            // Maybe tenant already exists, try refreshing
+            if (refreshTenant) await refreshTenant()
+            setTenantLoading(false)
+          })
+      })
+    }
+  })
 
   // Si tiene rubro y step guardado, retomar desde ese step
   const initialStep = tenant?.rubro
@@ -50,6 +73,24 @@ export default function OnboardingPage() {
   const [selectedRubro, setSelectedRubro] = useState(tenant?.rubro ?? null)
   const [provisioning, setProvisioning]   = useState(false)
   const [provisionError, setProvisionError] = useState(null)
+
+  // ── Loading si no hay tenant aún ────────────────────────
+
+  if (!tenant || tenantLoading) {
+    return (
+      <OnboardingShell step={1}>
+        <div className="flex flex-col items-center justify-center flex-1 gap-4 px-6 py-12">
+          <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+            <svg className="animate-spin w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-500">Preparando tu cuenta...</p>
+        </div>
+      </OnboardingShell>
+    )
+  }
 
   // ── Paso 1 → selección de rubro ─────────────────────────
 
