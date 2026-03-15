@@ -228,17 +228,19 @@ const KNOWN_COLUMNS = {
   ]),
   entities: new Set([
     'id', 'tenant_id', 'name', 'code', 'entity_type', 'balance',
-    'credit_limit', 'data', 'is_active', 'created_at', 'updated_at',
+    'credit_limit', 'tags', 'data', 'is_active', 'created_at', 'updated_at',
   ]),
   transactions: new Set([
     'id', 'tenant_id', 'entity_id', 'transaction_type', 'number',
-    'status', 'total', 'payment_method', 'notes', 'data',
-    'is_active', 'created_at', 'updated_at',
+    'status', 'subtotal', 'discount', 'tax', 'total', 'paid_amount',
+    'payment_method', 'notes', 'data', 'is_active',
+    'created_by', 'confirmed_at', 'delivered_at', 'paid_at', 'due_date',
+    'created_at', 'updated_at',
   ]),
   transaction_items: new Set([
     'id', 'tenant_id', 'transaction_id', 'product_id', 'product_name',
-    'quantity', 'unit_price', 'subtotal', 'data',
-    'created_at', 'updated_at',
+    'description', 'unit_type', 'quantity', 'unit_price', 'discount_pct',
+    'subtotal', 'data', 'created_at', 'updated_at',
   ]),
   stock_movements: new Set([
     'id', 'tenant_id', 'product_id', 'movement_type', 'quantity',
@@ -248,19 +250,20 @@ const KNOWN_COLUMNS = {
   accounts_receivable: new Set([
     'id', 'tenant_id', 'entity_id', 'transaction_id', 'amount',
     'balance_before', 'balance_after', 'movement_type', 'description',
-    'is_paid', 'data', 'created_at',
+    'due_date', 'is_paid', 'paid_at', 'notes', 'data', 'created_at',
   ]),
   caja_sessions: new Set([
     'id', 'tenant_id', 'status', 'opening_balance', 'closing_balance',
     'current_balance', 'actual_balance', 'difference',
     'total_ingresos', 'total_egresos',
-    'opened_by', 'opened_by_name', 'closed_by',
+    'opened_by', 'opened_by_name', 'closed_by', 'closed_by_name',
     'opened_at', 'closed_at', 'closing_notes', 'data',
+    'created_at', 'updated_at',
   ]),
   caja_movements: new Set([
     'id', 'tenant_id', 'session_id', 'movement_type', 'amount',
-    'balance_after', 'category', 'description', 'payment_method',
-    'data', 'created_by', 'created_at',
+    'balance_before', 'balance_after', 'category', 'description', 'payment_method',
+    'data', 'created_by', 'created_by_name', 'created_at',
   ]),
   schedules: new Set([
     'id', 'tenant_id', 'entity_id', 'transaction_id', 'schedule_type',
