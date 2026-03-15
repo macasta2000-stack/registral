@@ -7,6 +7,7 @@
  */
 
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { usePreset } from '../../core/engine/PresetContext'
 import { useAuth } from '../../core/auth/useAuth'
@@ -92,6 +93,7 @@ export default function CuentaCorrientePage() {
   const clienteLabel = vocab.client ?? 'Cliente'
   const clientesLabel = vocab.clients ?? 'Clientes'
 
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('todos')
 
@@ -254,6 +256,7 @@ export default function CuentaCorrientePage() {
                   {filtered.map((c, i) => (
                     <tr
                       key={c.id}
+                      onClick={() => navigate('/clientes', { state: { editId: c.id } })}
                       className={`cursor-pointer hover:bg-gray-50 transition ${i < filtered.length - 1 ? 'border-b border-gray-50' : ''}`}
                     >
                       <td className="px-4 py-3 text-gray-400 font-mono text-xs">{c.code ?? '—'}</td>
@@ -288,6 +291,7 @@ export default function CuentaCorrientePage() {
               {filtered.map(c => (
                 <button
                   key={c.id}
+                  onClick={() => navigate('/clientes', { state: { editId: c.id } })}
                   className="w-full text-left bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 active:scale-[0.98] transition"
                 >
                   <div className="flex items-center justify-between">

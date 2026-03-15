@@ -311,26 +311,54 @@ export function useRemitoActions() {
     if (!remito) throw new Error('Remito no encontrado')
 
     const now = new Date().toISOString()
+    const paidAmount = Number(amount ?? remito.total)
     const ops = []
 
     const updatedRemito = {
       ...remito,
       status:         'paid',
-      paid_amount:    Number(amount ?? remito.total),
+      paid_amount:    paidAmount,
       payment_method: method ?? remito.payment_method,
       paid_at:        now,
       updated_at:     now,
     }
     ops.push({ table: 'transactions', operation: 'UPDATE', record: updatedRemito })
 
-    // Si NO era CC (el cargo en AR no existe aún), crearlo como pago directo
-    if (remito.payment_method !== 'Cuenta corriente' && remito.entity_id) {
-      // No hay cargo pendiente en AR → no necesitamos crear nada
-      // Solo marcar el remito como cobrado
+    // Si era CC → registrar el pago en AR y actualizar saldo del cliente
+    if (remito.payment_method === 'Cuenta corriente' && remito.entity_id) {
+      const entity     = await db.entities.get(remito.entity_id)
+      const newBalance = Math.max(0, Number(entity?.balance ?? 0) - paidAmount)
+
+      ops.push({
+        table: 'accounts_receivable',
+        operation: 'INSERT',
+        record: {
+          id:            uuid4(),
+          tenant_id:     tenantId,
+          entity_id:     remito.entity_id,
+          transaction_id:id,
+          movement_type: 'pago',
+          amount:        -paidAmount,
+          balance_after: newBalance,
+          is_paid:       true,
+          paid_at:       now,
+          notes:         `Cobro remito ${remito.number} — ${method ?? remito.payment_method}`,
+          created_at:    now,
+          _client_id:    uuid4(),
+        },
+      })
+
+      if (entity) {
+        ops.push({
+          table: 'entities',
+          operation: 'UPDATE',
+          record: { ...entity, balance: newBalance, updated_at: now },
+        })
+      }
     }
 
     return bulkSave(ops, { critical: false })
-  }, [bulkSave])
+  }, [tenantId, bulkSave])
 
   /**
    * Cancela un remito y revierte el stock si estaba confirmado.

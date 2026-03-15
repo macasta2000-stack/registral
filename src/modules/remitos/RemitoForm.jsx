@@ -312,14 +312,17 @@ function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemov
   const debRef = useRef(null)
   const containerRef = useRef(null)
 
+  // Show all products on focus (empty query), filter when typing
   const results = useLiveQuery(
     async () => {
-      if (!tenantId || debQ.length < 1) return []
-      const q = debQ.toLowerCase()
+      if (!tenantId) return []
       const all = await db.products.where('tenant_id').equals(tenantId).toArray()
-      return all.filter(p => p.is_active !== false && (
+      const active = all.filter(p => p.is_active !== false)
+      if (!debQ) return active.slice(0, 10) // Show first 10 on focus
+      const q = debQ.toLowerCase()
+      return active.filter(p =>
         p.name?.toLowerCase().includes(q) || p.code?.toLowerCase().includes(q)
-      )).slice(0, 6)
+      ).slice(0, 10)
     },
     [tenantId, debQ],
     []
@@ -331,7 +334,7 @@ function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemov
     onUpdate('description', val)
     setShowResults(true)
     if (debRef.current) clearTimeout(debRef.current)
-    debRef.current = setTimeout(() => setDebQ(val), 300)
+    debRef.current = setTimeout(() => setDebQ(val), 200)
   }
 
   function handleSelect(product) {
@@ -505,16 +508,19 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
   const debRef              = useRef(null)
   const containerRef        = useRef(null)
 
+  // Show all clients on focus (empty query), filter when typing
   const results = useLiveQuery(
     async () => {
-      if (!tenantId || debQ.length < 1) return []
-      const q = debQ.toLowerCase()
-      return db.entities
+      if (!tenantId) return []
+      const all = await db.entities
         .where('[tenant_id+entity_type]')
         .equals([tenantId, 'cliente'])
-        .filter(e => e.is_active !== false && e.name?.toLowerCase().includes(q))
-        .limit(6)
+        .filter(e => e.is_active !== false)
         .toArray()
+
+      if (!debQ) return all.slice(0, 20) // Show first 20 on focus
+      const q = debQ.toLowerCase()
+      return all.filter(e => e.name?.toLowerCase().includes(q)).slice(0, 10)
     },
     [tenantId, debQ],
     []
@@ -525,13 +531,20 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
     setQuery(val)
     setOpen(true)
     if (debRef.current) clearTimeout(debRef.current)
-    debRef.current = setTimeout(() => setDebQ(val), 300)
+    debRef.current = setTimeout(() => setDebQ(val), 200)
   }
 
   function handleSelect(entity) {
     setQuery(entity.name)
     setOpen(false)
     onSelect(entity.id, entity.name)
+  }
+
+  function handleClear() {
+    setQuery('')
+    setDebQ('')
+    onSelect(null, '')
+    setOpen(true)
   }
 
   useEffect(() => {
@@ -544,17 +557,26 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
 
   return (
     <div className="relative" ref={containerRef}>
-      <input
-        type="text"
-        value={query}
-        onChange={handleChange}
-        onFocus={() => setOpen(true)}
-        placeholder={placeholder}
-        autoComplete="off"
-        className="w-full text-sm border border-gray-200 bg-white rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
-      />
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          onFocus={() => setOpen(true)}
+          placeholder={placeholder}
+          autoComplete="off"
+          className="w-full text-sm border border-gray-200 bg-white rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+        {query && (
+          <button
+            type="button"
+            onMouseDown={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+          >✕</button>
+        )}
+      </div>
       {open && results && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
+        <ul className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-48 overflow-y-auto">
           {results.map(e => (
             <li key={e.id}>
               <button
@@ -568,6 +590,11 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
             </li>
           ))}
         </ul>
+      )}
+      {open && results && results.length === 0 && query && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg px-3 py-3 text-sm text-gray-400">
+          Sin resultados para &ldquo;{query}&rdquo;
+        </div>
       )}
     </div>
   )
