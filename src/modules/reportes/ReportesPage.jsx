@@ -259,7 +259,7 @@ export default function ReportesPage() {
   const [expanded, setExpanded] = useState(null)
 
   const data = useReportData()
-  const loading = data.transactions === null
+  const loading = data.transactions === null || data.products === null || data.entities === null
   const periodStart = useMemo(() => getPeriodStart(period), [period])
 
   // ── Build reports ──
