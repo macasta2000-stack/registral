@@ -3,7 +3,8 @@
  * src/modules/clientes/ClientesPage.jsx
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { usePreset }   from '../../core/engine/PresetContext'
 import { useClientes } from './useClientes'
 import ClienteModal     from './ClienteModal'
@@ -13,6 +14,8 @@ import {
 
 export default function ClientesPage() {
   const { preset }     = usePreset()
+  const location       = useLocation()
+  const navigate       = useNavigate()
   const vocab          = preset?.vocabulary ?? {}
   const clienteLabel   = vocab.client  ?? 'Cliente'
   const clientesLabel  = vocab.clients ?? 'Clientes'
@@ -21,6 +24,15 @@ export default function ClientesPage() {
   const [withDebt, setWithDebt] = useState(false)
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
+
+  // Handle navigation state from dashboard
+  useEffect(() => {
+    if (location.state?.openNew) {
+      setSelected(null)
+      setShowModal(true)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state])
 
   const clientes = useClientes({ search, withDebt })
 

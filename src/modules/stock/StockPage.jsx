@@ -3,7 +3,8 @@
  * src/modules/stock/StockPage.jsx
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { usePreset }       from '../../core/engine/PresetContext'
 import { useProducts, useLowStockProducts } from './useStock'
 import ProductModal         from './ProductModal'
@@ -15,6 +16,8 @@ import {
 
 export default function StockPage() {
   const { preset }       = usePreset()
+  const location         = useLocation()
+  const navigate         = useNavigate()
   const vocab            = preset?.vocabulary ?? {}
   const stockCfg         = preset?.modules_config?.stock ?? {}
   const categories       = stockCfg.categories ?? []
@@ -24,6 +27,20 @@ export default function StockPage() {
   const [lowOnly, setLowOnly]   = useState(false)
   const [selected, setSelected] = useState(null) // null | 'new' | product object
   const [showModal, setShowModal] = useState(false)
+
+  // Handle navigation state from dashboard
+  useEffect(() => {
+    if (location.state?.openNew) {
+      setSelected(null)
+      setShowModal(true)
+      // Clear state so it doesn't re-trigger on back/forward
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    if (location.state?.lowStockFilter) {
+      setLowOnly(true)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state])
 
   const products     = useProducts({ search, category, lowStockOnly: lowOnly })
   const lowProducts  = useLowStockProducts()

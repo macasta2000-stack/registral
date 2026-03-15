@@ -487,7 +487,8 @@ export default function DashboardPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
         ),
-        path: '/remitos/nuevo',
+        path: '/remitos',
+        state: { openNew: true },
         color: 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200',
       },
       {
@@ -497,7 +498,8 @@ export default function DashboardPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25-2.25M12 13.875V7.5M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
           </svg>
         ),
-        path: '/stock/nuevo',
+        path: '/stock',
+        state: { openNew: true },
         color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200',
       },
       {
@@ -507,7 +509,8 @@ export default function DashboardPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m3-3h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
           </svg>
         ),
-        path: '/clientes/nuevo',
+        path: '/clientes',
+        state: { openNew: true },
         color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200',
       },
       {
@@ -606,7 +609,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <button
-            onClick={() => navigate('/remitos/nuevo')}
+            onClick={() => navigate('/remitos', { state: { openNew: true } })}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-xl shadow-sm shadow-amber-200 hover:bg-amber-600 active:scale-[0.98] transition"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -794,7 +797,7 @@ export default function DashboardPage() {
           {quickActions.map((action) => (
             <button
               key={action.path}
-              onClick={() => navigate(action.path)}
+              onClick={() => navigate(action.path, action.state ? { state: action.state } : undefined)}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-[0.98] shadow-sm ${action.color}`}
             >
               {action.icon}
@@ -826,7 +829,7 @@ export default function DashboardPage() {
                     <div
                       key={item.id}
                       className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
-                      onClick={() => navigate(`/remitos/${item.id}`)}
+                      onClick={() => navigate('/remitos', { state: { viewId: item.id } })}
                     >
                       <div className="relative flex-shrink-0">
                         <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-amber-50 group-hover:text-amber-600 transition-colors">
@@ -888,7 +891,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <button
-                onClick={() => navigate('/stock?filter=bajo_minimo')}
+                onClick={() => navigate('/stock', { state: { lowStockFilter: true } })}
                 className="text-xs text-amber-600 hover:text-amber-700 font-semibold"
               >
                 Ver stock

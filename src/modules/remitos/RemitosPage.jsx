@@ -3,8 +3,8 @@
  * src/modules/remitos/RemitosPage.jsx
  */
 
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { usePreset }       from '../../core/engine/PresetContext'
 import { useRemitos, useRemitoActions } from './useRemitos'
 import { useLiveQuery }    from 'dexie-react-hooks'
@@ -29,6 +29,8 @@ const STATUS_TABS = [
 export default function RemitosPage() {
   const { preset }   = usePreset()
   const { tenantId } = useAuth()
+  const location     = useLocation()
+  const navigate     = useNavigate()
   const vocab        = preset?.vocabulary ?? {}
   const transLabel   = vocab.transaction ?? 'Remito'
   const transLabels  = vocab.transactions ?? 'Remitos'
@@ -38,6 +40,17 @@ export default function RemitosPage() {
   const [view, setView]             = useState(null) // null | {mode:'new'} | {mode:'edit',id} | {mode:'detail',id}
   const [confirmAction, setConfirmAction] = useState(null) // { type, id, label }
   const [actionLoading, setActionLoading] = useState(null)
+
+  // Handle navigation state from dashboard
+  useEffect(() => {
+    if (location.state?.openNew) {
+      setView({ mode: 'new' })
+      navigate(location.pathname, { replace: true, state: {} })
+    } else if (location.state?.viewId) {
+      setView({ mode: 'detail', id: location.state.viewId })
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state])
 
   const remitos = useRemitos({ status: activeTab, search })
   const { confirmRemito, deliverRemito, cancelRemito } = useRemitoActions()
