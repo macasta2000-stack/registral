@@ -388,7 +388,7 @@ function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemov
           className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
         {showResults && results && results.length > 0 && (
-          <ul className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
+          <ul className="absolute left-0 right-0 top-full z-50 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl max-h-48 overflow-y-auto">
             {results.map(p => (
               <li key={p.id}>
                 <button
@@ -464,7 +464,7 @@ function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemov
 
 function Section({ title, children, action }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
         <p className="text-sm font-semibold text-gray-700">{title}</p>
         {action}
