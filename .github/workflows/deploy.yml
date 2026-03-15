@@ -24,6 +24,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://bxcgyzdloxmjnqqtuqfa.supabase.co
+          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4Y2d5emRsb3htam5xcXR1cWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjU0ODMsImV4cCI6MjA4OTEwMTQ4M30.0cmjmccy9P2h02GwpO7BXLWF_u0NBiIY6AU-Rhgk5eE
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
