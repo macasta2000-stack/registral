@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registral — Manual de Usuario Interactivo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --amber-50: #fffbeb;
+      --amber-100: #fef3c7;
+      --amber-200: #fde68a;
+      --amber-300: #fcd34d;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --amber-600: #d97706;
+      --amber-700: #b45309;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --green-50: #f0fdf4;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+      --blue-50: #eff6ff;
+      --blue-500: #3b82f6;
+      --blue-600: #2563eb;
+      --red-50: #fef2f2;
+      --red-500: #ef4444;
+      --purple-50: #faf5ff;
+      --purple-500: #a855f7;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.6;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #d97706, #f59e0b, #ea580c);
+      color: white;
+      padding: 60px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    }
+    .hero-content { position: relative; max-width: 700px; margin: 0 auto; }
+    .hero-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .hero-logo-box {
+      width: 56px; height: 56px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 900;
+    }
+    .hero-logo-text { font-size: 32px; font-weight: 800; }
+    .hero h1 { font-size: 2.8rem; font-weight: 900; margin-bottom: 12px; line-height: 1.15; }
+    .hero p { font-size: 1.15rem; opacity: 0.9; max-width: 520px; margin: 0 auto 28px; }
+    .hero-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .hero-badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* ── NAV TABS ── */
+    .nav-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-tab {
+      padding: 14px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    .nav-tab:hover { color: var(--amber-600); }
+    .nav-tab.active {
+      color: var(--amber-600);
+      border-bottom-color: var(--amber-500);
+    }
+
+    /* ── MAIN ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* ── SECTIONS ── */
+    .section { display: none; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+    .section-subtitle {
+      font-size: 1rem;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--gray-100);
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .card-title { font-size: 1.15rem; font-weight: 700; color: var(--gray-900); }
+    .card-desc { font-size: 0.9rem; color: var(--gray-500); margin-top: 2px; }
+
+    /* ── STEPS ── */
+    .steps { counter-reset: step; }
+    .step {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--gray-100);
+    }
+    .step-number {
+      counter-increment: step;
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .step-number::before { content: counter(step); }
+    .step-content { flex: 1; }
+    .step-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: var(--gray-900); }
+    .step-text { font-size: 0.9rem; color: var(--gray-600); line-height: 1.7; }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── RUBRO CARDS ── */
+    .rubro-card {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--gray-100);
+      padding: 24px;
+      text-align: center;
+      transition: all 0.2s;
+      cursor: default;
+    }
+    .rubro-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    .rubro-icon { font-size: 42px; margin-bottom: 12px; }
+    .rubro-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+    .rubro-price { color: var(--amber-600); font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; }
+    .rubro-modules { font-size: 0.8rem; color: var(--gray-500); line-height: 1.6; }
+
+    /* ── TABLE ── */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 16px 0;
+    }
+    .doc-table th {
+      background: var(--gray-50);
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--gray-700);
+      border-bottom: 2px solid var(--gray-200);
+    }
+    .doc-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-600);
+    }
+    .doc-table tr:hover td { background: var(--amber-50); }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: var(--green-50); color: var(--green-600); }
+    .badge-amber { background: var(--amber-50); color: var(--amber-700); }
+    .badge-red { background: var(--red-50); color: var(--red-500); }
+    .badge-blue { background: var(--blue-50); color: var(--blue-600); }
+    .badge-purple { background: var(--purple-50); color: var(--purple-500); }
+
+    /* ── TIPS ── */
+    .tip {
+      background: var(--amber-50);
+      border-left: 4px solid var(--amber-400);
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .tip-title { font-weight: 700; color: var(--amber-700); margin-bottom: 4px; }
+    .tip-text { color: var(--amber-700); opacity: 0.85; }
+
+    .info {
+      background: var(--blue-50);
+      border-left: 4px solid var(--blue-500);
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .info-title { font-weight: 700; color: var(--blue-600); margin-bottom: 4px; }
+    .info-text { color: var(--blue-600); opacity: 0.85; }
+
+    /* ── WORKFLOW ── */
+    .workflow {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 16px 0;
+      margin: 16px 0;
+    }
+    .workflow-step {
+      text-align: center;
+      min-width: 120px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .workflow-step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -10px;
+      top: 12px;
+      color: var(--amber-400);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .workflow-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--amber-50);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      margin: 0 auto 8px;
+    }
+    .workflow-label { font-size: 0.78rem; font-weight: 600; color: var(--gray-700); }
+
+    /* ── ACCORDION ── */
+    .accordion { margin: 8px 0; }
+    .accordion-header {
+      width: 100%;
+      background: white;
+      border: 1px solid var(--gray-100);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      transition: all 0.2s;
+    }
+    .accordion-header:hover { background: var(--gray-50); }
+    .accordion-header .arrow {
+      margin-left: auto;
+      transition: transform 0.2s;
+      color: var(--gray-400);
+    }
+    .accordion-header.open .arrow { transform: rotate(180deg); }
+    .accordion-body {
+      display: none;
+      padding: 0 20px 20px;
+      background: white;
+      border: 1px solid var(--gray-100);
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      margin-top: -14px;
+      padding-top: 24px;
+      font-size: 0.9rem;
+      color: var(--gray-600);
+      line-height: 1.8;
+    }
+    .accordion-body.open { display: block; animation: fadeIn 0.2s ease; }
+
+    /* ── SHORTCUTS ── */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--gray-100);
+      border-radius: 12px;
+    }
+    .shortcut-icon { font-size: 20px; }
+    .shortcut-label { font-size: 0.85rem; font-weight: 500; color: var(--gray-700); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray-400);
+      font-size: 0.85rem;
+    }
+    .footer a { color: var(--amber-600); text-decoration: none; font-weight: 600; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero { padding: 40px 16px 60px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .step { flex-direction: column; gap: 12px; }
+      .nav-tab { padding: 12px 14px; font-size: 0.8rem; }
+      .section-title { font-size: 1.4rem; }
+      .workflow-step { min-width: 90px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-logo">
+        <div class="hero-logo-box">R</div>
+        <span class="hero-logo-text">Registral</span>
+      </div>
+      <h1>Manual de Usuario</h1>
+      <p>Guía completa paso a paso para instalar, configurar y usar Registral en tu negocio.</p>
+      <div class="hero-badges">
+        <span class="hero-badge">📱 Funciona en celular</span>
+        <span class="hero-badge">🌐 Sin instalar nada</span>
+        <span class="hero-badge">📶 Funciona sin internet</span>
+        <span class="hero-badge">🔒 Datos seguros</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ NAV ═══════════════ -->
+  <div class="nav-sticky">
+    <div class="nav-inner">
+      <button class="nav-tab active" data-tab="instalacion">🚀 Instalación</button>
+      <button class="nav-tab" data-tab="primeros-pasos">📝 Primeros pasos</button>
+      <button class="nav-tab" data-tab="rubros">🏢 Rubros</button>
+      <button class="nav-tab" data-tab="modulos">📦 Módulos</button>
+      <button class="nav-tab" data-tab="flujos">🔄 Flujos de trabajo</button>
+      <button class="nav-tab" data-tab="cuenta">👤 Mi cuenta</button>
+      <button class="nav-tab" data-tab="faq">❓ Preguntas frecuentes</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main">
+
+    <!-- ═══ INSTALACIÓN ═══ -->
+    <div class="section active" id="instalacion">
+      <h2 class="section-title">🚀 Instalación y acceso</h2>
+      <p class="section-subtitle">Registral es una app web progresiva (PWA). No necesitás descargar nada de una tienda.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--blue-50);">💻</div>
+          <div>
+            <div class="card-title">Desde una computadora</div>
+            <div class="card-desc">Chrome, Edge, Firefox o Safari</div>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">Abrí el navegador</div>
+              <div class="step-text">Ingresá a <strong><a href="https://macasta2000-stack.github.io/registral/" target="_blank" style="color:var(--amber-600)">macasta2000-stack.github.io/registral</a></strong></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">Creá tu cuenta</div>
+              <div class="step-text">Hacé clic en <strong>"Crear cuenta gratis"</strong>. Solo necesitás email y contraseña (mínimo 6 caracteres).</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">Instalá como app (opcional)</div>
+              <div class="step-text">En Chrome, hacé clic en el ícono de <strong>instalar</strong> (📥) que aparece en la barra de direcciones. Esto crea un acceso directo en tu escritorio y la app funciona como si fuera nativa.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--green-50);">📱</div>
+          <div>
+            <div class="card-title">Desde un celular o tablet</div>
+            <div class="card-desc">Android o iOS</div>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">Abrí el navegador del celular</div>
+              <div class="step-text">Ingresá a <strong>macasta2000-stack.github.io/registral</strong> desde Chrome (Android) o Safari (iPhone).</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">Agregá a la pantalla de inicio</div>
+              <div class="step-text">
+                <strong>Android:</strong> Tocá los 3 puntos (⋮) → "Agregar a pantalla de inicio"<br>
+                <strong>iPhone:</strong> Tocá compartir (↑) → "Agregar a inicio"
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number"></div>
+            <div class="step-content">
+              <div class="step-title">¡Listo!</div>
+              <div class="step-text">Se crea un ícono en tu pantalla. Abrilo como cualquier app. Funciona a pantalla completa y sin barra del navegador.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-title">💡 Sesión persistente</div>
+        <div class="tip-text">Una vez que iniciás sesión, <strong>no te la va a pedir de nuevo</strong>. Tu sesión se guarda en el dispositivo. Solo tendrías que volver a ingresar si borrás los datos del navegador.</div>
+      </div>
+
+      <div class="info">
+        <div class="info-title">📶 Funciona sin internet</div>
+        <div class="info-text">Registral guarda todo localmente. Si perdés conexión, podés seguir trabajando. Cuando vuelvas a estar online, se sincroniza automáticamente.</div>
+      </div>
+    </div>
+
+    <!-- ═══ PRIMEROS PASOS ═══ -->
+    <div class="section" id="primeros-pasos">
+      <h2 class="section-title">📝 Primeros pasos</h2>
+      <p class="section-subtitle">Configurá tu negocio en 4 pasos simples después de registrarte.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number"></div>
+          <div class="step-content">
+            <div class="step-title">Elegí tu rubro</div>
+            <div class="step-text">Seleccioná el tipo de negocio que tenés: Corralón, Gastronomía, Retail, Abogacía, Medicina o Servicios Generales. Esto configura los módulos, el vocabulario y los campos automáticamente para tu industria.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number"></div>
+          <div class="step-content">
+            <div class="step-title">Completá los datos de tu negocio</div>
+            <div class="step-text">Ingresá el nombre de tu negocio (obligatorio), teléfono, dirección y CUIT. Estos datos aparecen en tus remitos y comprobantes. Los campos se guardan automáticamente.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number"></div>
+          <div class="step-content">
+            <div class="step-title">Mirá la preview con datos de ejemplo</div>
+            <div class="step-text">Ves cómo queda tu dashboard con datos de demostración. Esto es solo para que sepas cómo se ve — tu sistema empieza vacío para que lo cargues con tus datos reales.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number"></div>
+          <div class="step-content">
+            <div class="step-title">Tour guiado</div>
+            <div class="step-text">Un tutorial interactivo te muestra cada módulo de la barra lateral. Podés completarlo o saltearlo.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border-left: 4px solid var(--amber-400);">
+        <div class="card-title" style="margin-bottom: 12px;">🎯 ¿Qué hacer primero después del onboarding?</div>
+        <div class="shortcut-grid">
+          <div class="shortcut-item">
+            <span class="shortcut-icon">📦</span>
+            <span class="shortcut-label">Cargá tus artículos/productos</span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-icon">👥</span>
+            <span class="shortcut-label">Agregá tus clientes</span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-icon">📋</span>
+            <span class="shortcut-label">Creá tu primer remito/venta</span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-icon">💰</span>
+            <span class="shortcut-label">Abrí la caja del día</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RUBROS ═══ -->
+    <div class="section" id="rubros">
+      <h2 class="section-title">🏢 Rubros disponibles</h2>
+      <p class="section-subtitle">Cada rubro tiene módulos, vocabulario y campos personalizados para tu industria.</p>
+
+      <div class="grid-3">
+        <div class="rubro-card">
+          <div class="rubro-icon">🧱</div>
+          <div class="rubro-name">Corralón</div>
+          <div class="rubro-price">USD $35/mes</div>
+          <div class="rubro-modules">Stock · Remitos · Clientes · Cuenta Corriente · Entregas · Caja · Reportes</div>
+        </div>
+        <div class="rubro-card">
+          <div class="rubro-icon">🍽️</div>
+          <div class="rubro-name">Gastronomía</div>
+          <div class="rubro-price">USD $40/mes</div>
+          <div class="rubro-modules">Mesas · Comandas · Menú · Reservas · Caja · Stock · Reportes</div>
+        </div>
+        <div class="rubro-card">
+          <div class="rubro-icon">🛒</div>
+          <div class="rubro-name">Retail / Comercio</div>
+          <div class="rubro-price">USD $35/mes</div>
+          <div class="rubro-modules">Stock · Ventas · Clientes · Caja · Reportes</div>
+        </div>
+        <div class="rubro-card">
+          <div class="rubro-icon">⚖️</div>
+          <div class="rubro-name">Abogacía</div>
+          <div class="rubro-price">USD $55/mes</div>
+          <div class="rubro-modules">Expedientes · Honorarios · Vencimientos · Agenda · Reportes</div>
+        </div>
+        <div class="rubro-card">
+          <div class="rubro-icon">🏥</div>
+          <div class="rubro-name">Medicina / Salud</div>
+          <div class="rubro-price">USD $60/mes</div>
+          <div class="rubro-modules">Pacientes · Turnos · Historia Clínica · Consultas · Reportes</div>
+        </div>
+        <div class="rubro-card">
+          <div class="rubro-icon">🔧</div>
+          <div class="rubro-name">Servicios Generales</div>
+          <div class="rubro-price">USD $30/mes</div>
+          <div class="rubro-modules">Presupuestos · Trabajos · Agenda · Cobros · Reportes</div>
+        </div>
+      </div>
+
+      <div class="tip" style="margin-top: 24px;">
+        <div class="tip-title">💡 Prueba gratuita</div>
+        <div class="tip-text">Todos los rubros tienen <strong>14 días de prueba gratis</strong>, sin tarjeta de crédito. Elegí el tuyo y empezá a usarlo.</div>
+      </div>
+    </div>
+
+    <!-- ═══ MÓDULOS ═══ -->
+    <div class="section" id="modulos">
+      <h2 class="section-title">📦 Módulos del sistema</h2>
+      <p class="section-subtitle">Cada rubro activa los módulos relevantes. Acá te explicamos cada uno.</p>
+
+      <!-- Dashboard -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>🏠</span> Dashboard (Panel principal)
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Tu centro de control. Muestra la salud del negocio de un vistazo.</p>
+          <br>
+          <strong>Lo que ves:</strong>
+          <ul style="margin: 8px 0 12px 20px;">
+            <li><strong>5 métricas principales:</strong> Ventas del mes, artículos en stock, clientes activos, remitos pendientes, stock bajo alerta</li>
+            <li><strong>Gráfico de ingresos:</strong> Últimos 7 días con tendencia</li>
+            <li><strong>Top 5 productos:</strong> Los más vendidos del mes</li>
+            <li><strong>Actividad reciente:</strong> Últimas 10 transacciones</li>
+            <li><strong>Alertas de stock:</strong> Productos que necesitan reposición</li>
+          </ul>
+          <strong>Acciones rápidas:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li>+ Nuevo remito</li>
+            <li>+ Nuevo artículo</li>
+            <li>+ Nuevo cliente</li>
+            <li>Abrir caja</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Stock -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>📦</span> Stock / Artículos
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Administrá tu inventario completo.</p>
+          <br>
+          <strong>Funciones:</strong>
+          <ul style="margin: 8px 0 12px 20px;">
+            <li>Agregar artículos con: código, nombre, categoría, precio, stock actual, mínimo</li>
+            <li>Buscar por nombre, código o categoría</li>
+            <li>Filtrar por categoría o solo los de stock bajo</li>
+            <li>Estado automático: <span class="badge badge-green">Óptimo</span> <span class="badge badge-amber">Bajo</span> <span class="badge badge-red">Crítico</span></li>
+            <li>El stock se descuenta automáticamente al confirmar un remito</li>
+          </ul>
+          <strong>Campos disponibles:</strong>
+          <table class="doc-table">
+            <tr><th>Campo</th><th>Obligatorio</th><th>Descripción</th></tr>
+            <tr><td>Nombre</td><td>Sí</td><td>Nombre del artículo</td></tr>
+            <tr><td>Código</td><td>No</td><td>Código interno</td></tr>
+            <tr><td>Categoría</td><td>No</td><td>Para organizar y filtrar</td></tr>
+            <tr><td>Precio</td><td>Sí</td><td>Precio de venta unitario</td></tr>
+            <tr><td>Stock actual</td><td>Sí</td><td>Cantidad disponible</td></tr>
+            <tr><td>Mínimo</td><td>Sí</td><td>Alerta si baja de este número</td></tr>
+            <tr><td>Unidad</td><td>No</td><td>Unidad, kg, metro, etc.</td></tr>
+            <tr><td>Costo</td><td>No</td><td>Precio de compra (para reportes)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Remitos -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>📋</span> Remitos / Ventas
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Creá y seguí tus transacciones de venta.</p>
+          <br>
+          <strong>Crear un remito:</strong>
+          <ol style="margin: 8px 0 12px 20px;">
+            <li>Tocá <strong>"+ Remito"</strong></li>
+            <li>Buscá y seleccioná un <strong>cliente</strong> (escribí el nombre para buscar)</li>
+            <li>Agregá <strong>artículos</strong> buscando por nombre</li>
+            <li>Ajustá cantidades, descuentos</li>
+            <li>Seleccioná <strong>forma de pago</strong></li>
+            <li>Guardá como borrador o confirmá</li>
+          </ol>
+
+          <strong>Estados del remito:</strong>
+          <table class="doc-table">
+            <tr><th>Estado</th><th>Qué significa</th><th>Acciones posibles</th></tr>
+            <tr><td><span class="badge badge-blue">Borrador</span></td><td>Se puede editar</td><td>Confirmar, editar, anular</td></tr>
+            <tr><td><span class="badge badge-amber">Confirmado</span></td><td>Stock descontado</td><td>Marcar entregado, anular</td></tr>
+            <tr><td><span class="badge badge-purple">Entregado</span></td><td>El cliente lo recibió</td><td>Registrar cobro</td></tr>
+            <tr><td><span class="badge badge-green">Cobrado</span></td><td>Pagado completo</td><td>Solo ver</td></tr>
+            <tr><td><span class="badge badge-red">Anulado</span></td><td>Cancelado, stock devuelto</td><td>Solo ver</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Clientes -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>👥</span> Clientes
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Administrá tu base de clientes y su estado de cuenta.</p>
+          <br>
+          <strong>Funciones:</strong>
+          <ul style="margin: 8px 0 12px 20px;">
+            <li>Agregar clientes con nombre, CUIT/DNI, teléfono, dirección, email</li>
+            <li>Definir <strong>tipo de cliente</strong>: Minorista, Mayorista, Constructor, Empresa</li>
+            <li>Establecer <strong>límite de crédito</strong> (la app alerta si lo excede)</li>
+            <li>Ver saldo de cuenta corriente en tiempo real</li>
+            <li>Filtrar por los que tienen deuda</li>
+          </ul>
+          <strong>Estados del cliente:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li><span class="badge badge-green">Al día</span> — Sin deuda</li>
+            <li><span class="badge badge-amber">Con deuda</span> — Debe pero dentro del límite</li>
+            <li><span class="badge badge-red">Excedido</span> — Superó el límite de crédito</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Caja -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>💰</span> Caja
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Controlá los movimientos de dinero del día.</p>
+          <br>
+          <strong>Flujo:</strong>
+          <ol style="margin: 8px 0 12px 20px;">
+            <li><strong>Abrir caja</strong> al iniciar el día</li>
+            <li>Registrar <strong>ingresos</strong> (ventas, cobros de cuenta corriente)</li>
+            <li>Registrar <strong>egresos</strong> (pagos a proveedores, gastos, retiros)</li>
+            <li><strong>Cerrar caja</strong> al final del día → queda el resumen</li>
+          </ol>
+          <strong>Medios de pago soportados:</strong> Efectivo, Transferencia, Tarjeta débito, Tarjeta crédito, Cheque, Cuenta corriente<br><br>
+          <strong>Categorías:</strong> Venta, Cobro CC, Pago proveedor, Gastos varios, Retiro, Ajuste
+        </div>
+      </div>
+
+      <!-- Cuenta Corriente -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>💸</span> Cuenta Corriente
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Seguimiento de lo que te deben tus clientes.</p>
+          <br>
+          <strong>Lo que ves:</strong>
+          <ul style="margin: 8px 0 12px 20px;">
+            <li>Deuda total de todos los clientes</li>
+            <li>Cantidad de clientes con deuda</li>
+            <li>Clientes ordenados por monto adeudado (mayor primero)</li>
+            <li>Detalle por cliente: historial de remitos, pagos y ajustes</li>
+          </ul>
+          <strong>Acciones:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Registrar pagos parciales o totales</li>
+            <li>Ver historial completo de movimientos</li>
+            <li>Filtrar: Todos, Con deuda, Vencidos</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Reportes -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>📊</span> Reportes
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Analizá el rendimiento de tu negocio con gráficos y números.</p>
+          <br>
+          <strong>Reportes disponibles:</strong>
+          <table class="doc-table">
+            <tr><th>Reporte</th><th>Qué muestra</th></tr>
+            <tr><td>📈 Ventas</td><td>Total vendido, cantidad de transacciones, gráfico diario</td></tr>
+            <tr><td>📦 Stock</td><td>Valor total del inventario, distribución por producto</td></tr>
+            <tr><td>💸 Cuenta Corriente</td><td>Deuda total, top clientes deudores</td></tr>
+            <tr><td>💰 Caja</td><td>Ingresos vs cobros, totales por categoría</td></tr>
+            <tr><td>🏆 Top Productos</td><td>Los más vendidos por cantidad</td></tr>
+          </table>
+          <br>
+          <strong>Períodos:</strong> 7 días, 30 días, 90 días, Este año<br>
+          <strong>Exportar:</strong> Cada reporte se puede bajar como CSV para Excel
+        </div>
+      </div>
+
+      <!-- Configuración -->
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span>⚙️</span> Configuración
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>Ajustá los datos de tu negocio y tu cuenta.</p>
+          <br>
+          <strong>Mi Negocio:</strong> Nombre, CUIT, dirección, teléfono, email (autoguardado)<br>
+          <strong>Mi Cuenta:</strong> Cambiar contraseña, cerrar sesión<br>
+          <strong>Plan:</strong> Ver plan actual, opciones de upgrade
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FLUJOS DE TRABAJO ═══ -->
+    <div class="section" id="flujos">
+      <h2 class="section-title">🔄 Flujos de trabajo</h2>
+      <p class="section-subtitle">Así se usa Registral en el día a día, según tu rubro.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--amber-50);">🧱</div>
+          <div>
+            <div class="card-title">Flujo diario — Corralón</div>
+            <div class="card-desc">Desde que abrís hasta que cerrás</div>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step">
+            <div class="workflow-icon">💰</div>
+            <div class="workflow-label">Abrir caja</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📋</div>
+            <div class="workflow-label">Crear remito</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">👥</div>
+            <div class="workflow-label">Elegir cliente</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📦</div>
+            <div class="workflow-label">Agregar artículos</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">✅</div>
+            <div class="workflow-label">Confirmar</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">🚛</div>
+            <div class="workflow-label">Entregar</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">💵</div>
+            <div class="workflow-label">Cobrar</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">🔒</div>
+            <div class="workflow-label">Cerrar caja</div>
+          </div>
+        </div>
+
+        <div class="tip">
+          <div class="tip-title">💡 El stock se descuenta solo</div>
+          <div class="tip-text">Cuando confirmás un remito, el stock de cada artículo se descuenta automáticamente. No tenés que hacerlo manual.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--green-50);">🛒</div>
+          <div>
+            <div class="card-title">Flujo diario — Retail / Comercio</div>
+            <div class="card-desc">Venta rápida en mostrador</div>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step">
+            <div class="workflow-icon">💰</div>
+            <div class="workflow-label">Abrir caja</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📋</div>
+            <div class="workflow-label">Nueva venta</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📦</div>
+            <div class="workflow-label">Buscar producto</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">💵</div>
+            <div class="workflow-label">Cobrar</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📊</div>
+            <div class="workflow-label">Ver reportes</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">🔒</div>
+            <div class="workflow-label">Cerrar caja</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--purple-50);">⚖️</div>
+          <div>
+            <div class="card-title">Flujo — Estudio jurídico</div>
+            <div class="card-desc">Gestión de expedientes</div>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step">
+            <div class="workflow-icon">📂</div>
+            <div class="workflow-label">Crear expediente</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">👤</div>
+            <div class="workflow-label">Asignar partes</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📅</div>
+            <div class="workflow-label">Fijar vencimientos</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">⚖️</div>
+            <div class="workflow-label">Registrar honorarios</div>
+          </div>
+          <div class="workflow-step">
+            <div class="workflow-icon">📊</div>
+            <div class="workflow-label">Reportes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MI CUENTA ═══ -->
+    <div class="section" id="cuenta">
+      <h2 class="section-title">👤 Mi cuenta</h2>
+      <p class="section-subtitle">Gestión de tu cuenta, contraseña y sesión.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: var(--green-50);">🔐</div>
+            <div>
+              <div class="card-title">Iniciar sesión</div>
+              <div class="card-desc">Solo la primera vez</div>
+            </div>
+          </div>
+          <p style="font-size:0.9rem; color:var(--gray-600); line-height:1.7;">
+            Ingresá con tu <strong>email y contraseña</strong>. La sesión se guarda automáticamente — no te la va a pedir de nuevo a menos que cierres sesión manualmente o borres los datos del navegador.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: var(--amber-50);">🔑</div>
+            <div>
+              <div class="card-title">¿Olvidaste tu contraseña?</div>
+              <div class="card-desc">Recuperala por email</div>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number"></div>
+              <div class="step-content">
+                <div class="step-title">Ir al login</div>
+                <div class="step-text">Hacé clic en <strong>"¿Olvidaste tu contraseña?"</strong></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number"></div>
+              <div class="step-content">
+                <div class="step-title">Ingresá tu email</div>
+                <div class="step-text">Poné el email con el que te registraste y tocá <strong>"Enviar link"</strong></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number"></div>
+              <div class="step-content">
+                <div class="step-title">Revisá tu casilla</div>
+                <div class="step-text">Te llega un email con un link. <strong>Revisá spam</strong> si no lo ves.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number"></div>
+              <div class="step-content">
+                <div class="step-title">Poné tu nueva contraseña</div>
+                <div class="step-text">El link te lleva a una pantalla donde elegís la contraseña nueva (mínimo 6 caracteres).</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--blue-50);">📱</div>
+          <div>
+            <div class="card-title">Usar en varios dispositivos</div>
+            <div class="card-desc">Computadora + celular</div>
+          </div>
+        </div>
+        <p style="font-size:0.9rem; color:var(--gray-600); line-height:1.7;">
+          Podés usar Registral en tu computadora y en tu celular al mismo tiempo. Los datos se sincronizan en tiempo real entre todos los dispositivos. Solo iniciá sesión con la misma cuenta en cada uno.
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══ FAQ ═══ -->
+    <div class="section" id="faq">
+      <h2 class="section-title">❓ Preguntas frecuentes</h2>
+      <p class="section-subtitle">Las dudas más comunes al empezar a usar Registral.</p>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Necesito instalar algo?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>No.</strong> Registral funciona desde el navegador. Opcionalmente podés "instalarlo" como app desde Chrome o Safari para tener un ícono en el escritorio/celular, pero no es obligatorio.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Qué pasa si se me corta internet?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>Seguís trabajando normal.</strong> Registral guarda todo en tu dispositivo primero. Cuando vuelva la conexión, sincroniza automáticamente con el servidor. No perdés ningún dato.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Puedo cambiar de rubro después?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          Podés cambiar de rubro durante los primeros 14 días de prueba. Después de elegir un plan, contactanos para hacer el cambio.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Mis datos están seguros?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>Sí.</strong> Tus datos están aislados de los de otros negocios mediante Row Level Security (RLS) en la base de datos. Nadie más puede ver ni acceder a tu información. Las contraseñas se almacenan encriptadas.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Puedo tener empleados con acceso?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>Próximamente.</strong> Estamos trabajando en un sistema de roles (dueño, admin, operador, solo lectura) para que puedas dar acceso a tu equipo con distintos permisos.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Cuánto cuesta?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          Depende del rubro, desde <strong>USD $30/mes</strong> (Servicios Generales) hasta <strong>USD $60/mes</strong> (Medicina). Todos incluyen <strong>14 días gratis</strong> sin tarjeta de crédito. Hay planes Básico, Pro y Agencia.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Funciona en celular?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>Sí, 100%.</strong> Registral está diseñado mobile-first. Todas las funciones están disponibles tanto en celular como en computadora. En celular las tablas se muestran como tarjetas para mejor lectura.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Puedo exportar mis datos?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>Sí.</strong> Desde la sección de Reportes podés exportar cualquier reporte a CSV, que se abre directamente en Excel o Google Sheets.
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          ¿Tengo que pedir login cada vez que entro?
+          <span class="arrow">▼</span>
+        </button>
+        <div class="accordion-body">
+          <strong>No.</strong> Iniciás sesión una sola vez y la app te recuerda. Solo vas a tener que volver a ingresar si cerrás sesión manualmente o si borrás los datos del navegador.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <div class="footer">
+    <p><strong>Registral</strong> · Tu negocio, bajo control total.</p>
+    <p style="margin-top: 8px;">
+      <a href="https://macasta2000-stack.github.io/registral/" target="_blank">Ir a la app</a>
+      &nbsp;·&nbsp; Versión 1.0 · 2026
+    </p>
+  </div>
+
+  <!-- ═══════════════ SCRIPT ═══════════════ -->
+  <script>
+    // Tab navigation
+    const tabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.section');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        sections.forEach(s => {
+          s.classList.remove('active');
+          if (s.id === target) s.classList.add('active');
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Accordion
+    function toggleAccordion(header) {
+      const body = header.nextElementSibling;
+      const isOpen = header.classList.contains('open');
+
+      // Close all others in the same parent
+      const parent = header.parentElement.parentElement;
+      parent.querySelectorAll('.accordion-header.open').forEach(h => {
+        h.classList.remove('open');
+        h.nextElementSibling.classList.remove('open');
+      });
+
+      if (!isOpen) {
+        header.classList.add('open');
+        body.classList.add('open');
+      }
+    }
+  </script>
+
+</body>
+</html>
