@@ -14,7 +14,7 @@
  * retoma desde el último step guardado en tenant.settings.onboarding_step.
  */
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../core/auth/useAuth'
 import {
@@ -43,26 +43,34 @@ export default function OnboardingPage() {
   const [tenantLoading, setTenantLoading] = useState(!tenant)
 
   // Si no hay tenant, intentar crearlo (el registro pudo fallar antes)
-  useState(() => {
+  useEffect(() => {
     if (!tenant && user) {
+      let cancelled = false
       import('../core/supabase/queries/provisionTenant').then(({ createTenantAndUser }) => {
+        if (cancelled) return
         createTenantAndUser({
           userId: user.id,
           email: user.email,
           fullName: user.user_metadata?.full_name || '',
         })
           .then((newTenant) => {
-            updateTenant(newTenant)
-            setTenantLoading(false)
+            if (!cancelled) {
+              updateTenant(newTenant)
+              setTenantLoading(false)
+            }
           })
           .catch(async () => {
+            if (cancelled) return
             // Maybe tenant already exists, try refreshing
             if (refreshTenant) await refreshTenant()
             setTenantLoading(false)
           })
       })
+      return () => { cancelled = true }
+    } else if (tenant) {
+      setTenantLoading(false)
     }
-  })
+  }, [tenant, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Si tiene rubro y step guardado, retomar desde ese step
   const initialStep = tenant?.rubro
