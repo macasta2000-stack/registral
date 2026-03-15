@@ -152,14 +152,14 @@ async function initialPull(tenantId) {
 
   for (const table of PULL_TABLES) {
     try {
-      const localCount = await db[table]
+      // Obtener IDs locales para detectar qué falta
+      const localRecords = await db[table]
         .where('tenant_id')
         .equals(tenantId)
-        .count()
+        .toArray()
+      const localIds = new Set(localRecords.map(r => r.id))
 
-      // Solo hacer pull si la tabla local está vacía para este tenant
-      if (localCount > 0) continue
-
+      // Traer todo del servidor para este tenant
       const { data, error } = await supabase
         .from(table)
         .select('*')
@@ -171,10 +171,16 @@ async function initialPull(tenantId) {
         continue
       }
 
-      if (data && data.length > 0) {
-        const records = data.map(r => ({ ...r, _sync_status: 'synced' }))
+      if (!data || data.length === 0) continue
+
+      // Solo insertar registros que no existen localmente
+      // (no sobreescribir datos locales que puedan tener cambios pendientes)
+      const missing = data.filter(r => !localIds.has(r.id))
+
+      if (missing.length > 0) {
+        const records = missing.map(r => ({ ...r, _sync_status: 'synced' }))
         await db[table].bulkPut(records)
-        console.log(`[syncEngine] initialPull: ${table} → ${records.length} registros`)
+        console.log(`[syncEngine] initialPull: ${table} → ${missing.length} nuevos (${localIds.size} ya existían)`)
       }
     } catch (err) {
       console.warn(`[syncEngine] initialPull ${table} falló:`, err.message)
