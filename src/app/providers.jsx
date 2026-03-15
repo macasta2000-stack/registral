@@ -50,7 +50,7 @@ const queryClient = new QueryClient({
 
 export function AppProviders({ children }) {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ErrorBoundary>
         <AuthProvider>
           <PresetProvider>
