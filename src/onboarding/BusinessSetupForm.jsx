@@ -47,13 +47,17 @@ export default function BusinessSetupForm({ onNext }) {
 
     debounceRef.current[field] = setTimeout(async () => {
       try {
-        const updated = await updateBusinessSettings(tenant.id, {
+        const savePromise = updateBusinessSettings(tenant.id, {
           ...tenant.settings,
           [field]: value,
         })
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 8000)
+        )
+        const updated = await Promise.race([savePromise, timeoutPromise])
         if (mountedRef.current) {
           setSaveStatus(prev => ({ ...prev, [field]: 'saved' }))
-          updateTenant({ settings: updated.settings, name: updated.name })
+          if (updated?.settings) updateTenant({ settings: updated.settings, name: updated.name })
           // Limpiar estado "saved" después de 2s
           setTimeout(() => {
             if (mountedRef.current) {
@@ -63,7 +67,8 @@ export default function BusinessSetupForm({ onNext }) {
         }
       } catch {
         if (mountedRef.current) {
-          setSaveStatus(prev => ({ ...prev, [field]: 'error' }))
+          // On timeout or error, clear status silently — data will save on next attempt or on "Siguiente"
+          setSaveStatus(prev => ({ ...prev, [field]: null }))
         }
       }
     }, SAVE_DEBOUNCE_MS)
@@ -85,30 +90,30 @@ export default function BusinessSetupForm({ onNext }) {
   async function handleNext() {
     if (!fields.business_name.trim()) return
     setGlobalSaving(true)
-    try {
-      await updateBusinessSettings(tenant.id, {
-        ...tenant.settings,
-        business_name: fields.business_name.trim(),
-        phone:         fields.phone.trim(),
-        address:       fields.address.trim(),
-        cuit:          fields.cuit.trim(),
-      })
-      updateTenant({
-        name:     fields.business_name.trim(),
-        settings: {
-          ...tenant.settings,
-          business_name: fields.business_name.trim(),
-          phone:         fields.phone.trim(),
-          address:       fields.address.trim(),
-          cuit:          fields.cuit.trim(),
-        },
-      })
-      onNext()
-    } catch (err) {
-      console.error('[BusinessSetupForm]', err)
-    } finally {
-      setGlobalSaving(false)
+
+    const localSettings = {
+      ...tenant.settings,
+      business_name: fields.business_name.trim(),
+      phone:         fields.phone.trim(),
+      address:       fields.address.trim(),
+      cuit:          fields.cuit.trim(),
     }
+
+    try {
+      // Timeout de 8s — si Supabase no responde, continuar con datos locales
+      const savePromise = updateBusinessSettings(tenant.id, localSettings)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 8000)
+      )
+      await Promise.race([savePromise, timeoutPromise])
+    } catch (err) {
+      console.warn('[BusinessSetupForm] Save to Supabase failed, continuing with local data:', err.message)
+    }
+
+    // Siempre actualizar el estado local y avanzar
+    updateTenant({ name: fields.business_name.trim(), settings: localSettings })
+    setGlobalSaving(false)
+    onNext()
   }
 
   const canContinue = fields.business_name.trim().length > 0

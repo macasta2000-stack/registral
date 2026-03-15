@@ -108,21 +108,25 @@ export default function OnboardingPage() {
   }, [tenant, updateTenant])
 
   const handleBusinessNext = useCallback(async () => {
-    await saveOnboardingStep(tenant.id, 3, tenant.settings)
+    // Fire-and-forget — don't block step transition on Supabase
+    saveOnboardingStep(tenant.id, 3, tenant.settings).catch(() => {})
     setStep(3)
   }, [tenant])
 
   const handleDemoStart = useCallback(async () => {
-    await saveOnboardingStep(tenant.id, 4, tenant.settings)
+    saveOnboardingStep(tenant.id, 4, tenant.settings).catch(() => {})
     setStep(4)
   }, [tenant])
 
   const handleTourFinish = useCallback(async () => {
     try {
-      const updated = await completeOnboarding(tenant.id, tenant.settings)
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+      const updated = await Promise.race([completeOnboarding(tenant.id, tenant.settings), timeout])
       updateTenant({ settings: updated.settings })
     } catch (err) {
       console.warn('[OnboardingPage] No se pudo marcar onboarding completo:', err.message)
+      // Mark locally even if Supabase fails
+      updateTenant({ settings: { ...tenant.settings, onboarding_completed: true, onboarding_step: 4 } })
     }
     navigate('/dashboard', { replace: true })
   }, [tenant, updateTenant, navigate])
