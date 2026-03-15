@@ -49,8 +49,9 @@ export default function RemitosPage() {
     if (location.state?.openNew) {
       setView({ mode: 'new' })
       navigate(location.pathname, { replace: true, state: {} })
-    } else if (location.state?.viewId) {
-      setView({ mode: 'detail', id: location.state.viewId })
+    } else if (location.state?.viewId || location.state?.searchResultId) {
+      const id = location.state.viewId || location.state.searchResultId
+      setView({ mode: 'detail', id })
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [location.state])

@@ -17,11 +17,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useAuth }   from '../../core/auth/useAuth'
-import { db }        from '../../core/offline/db'
 import { SyncStatusBar } from '../../core/offline/SyncStatusBar'
 import { GlobalSearch, useGlobalSearchShortcut } from '../ui/GlobalSearch'
+import { NotificationsPanel, useNotificationCount } from '../ui/NotificationsPanel'
 import Sidebar       from './Sidebar'
 
 // ─────────────────────────────────────────────────────────────
@@ -152,20 +151,11 @@ function TopBar({ onHamburger, onSearchOpen }) {
   const { tenant, user, signOut, businessName } = useAuth()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const menuRef = useRef(null)
 
-  // Contar notificaciones no leídas desde IndexedDB
-  const unreadCount = useLiveQuery(
-    async () => {
-      if (!tenant?.id) return 0
-      return db.notifications
-        .where('[tenant_id+is_read]')
-        .equals([tenant.id, 0]) // 0 = false en Dexie indexing
-        .count()
-    },
-    [tenant?.id],
-    0
-  )
+  // Smart notification count from IndexedDB data
+  const unreadCount = useNotificationCount()
 
   // Cerrar dropdown al click fuera
   useEffect(() => {
@@ -241,20 +231,24 @@ function TopBar({ onHamburger, onSearchOpen }) {
         </button>
 
         {/* Notificaciones */}
-        <button
-          className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition"
-          aria-label={`${unreadCount} notificaciones sin leer`}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setNotifOpen(s => !s)}
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition"
+            aria-label={`${unreadCount} notificaciones sin leer`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+          <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+        </div>
 
         {/* Avatar / User menu */}
         <div className="relative" ref={menuRef}>

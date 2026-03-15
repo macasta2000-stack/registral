@@ -42,6 +42,16 @@ export default function StockPage() {
       setLowOnly(true)
       navigate(location.pathname, { replace: true, state: {} })
     }
+    if (location.state?.searchResultId) {
+      const id = location.state.searchResultId
+      // Find product and open edit modal
+      import('../../core/offline/db').then(({ db }) => {
+        db.products.get(id).then(p => {
+          if (p) { setSelected(p); setShowModal(true) }
+        })
+      })
+      navigate(location.pathname, { replace: true, state: {} })
+    }
   }, [location.state])
 
   const products     = useProducts({ search, category, lowStockOnly: lowOnly })

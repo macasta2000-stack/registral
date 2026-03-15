@@ -27,11 +27,20 @@ export default function ClientesPage() {
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
 
-  // Handle navigation state from dashboard
+  // Handle navigation state from dashboard / search
   useEffect(() => {
     if (location.state?.openNew) {
       setSelected(null)
       setShowModal(true)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    if (location.state?.searchResultId || location.state?.editId) {
+      const id = location.state.searchResultId || location.state.editId
+      import('../../core/offline/db').then(({ db }) => {
+        db.entities.get(id).then(e => {
+          if (e) { setSelected(e); setShowModal(true) }
+        })
+      })
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [location.state])
