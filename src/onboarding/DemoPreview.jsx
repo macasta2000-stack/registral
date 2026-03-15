@@ -22,6 +22,17 @@ const DEMO_LOADERS = {
   servicios_generales: () => import('../demo/servicios_generales.json').catch(() => ({ default: FALLBACK_DEMO })),
 }
 
+// Mapa de loaders de presets para vocabulario
+const PRESET_LOADERS = {
+  correlon:            () => import('../presets/preset.correlon.json'),
+  gastronomia:         () => import('../presets/preset.gastronomia.json'),
+  abogacia:            () => import('../presets/preset.abogacia.json'),
+  medicina:            () => import('../presets/preset.medicina.json'),
+  retail:              () => import('../presets/preset.retail.json'),
+  servicios_generales: () => import('../presets/preset.servicios-generales.json'),
+  'servicios-generales': () => import('../presets/preset.servicios-generales.json'),
+}
+
 const FALLBACK_DEMO = {
   products: [],
   entities: [],
@@ -31,13 +42,19 @@ const FALLBACK_DEMO = {
 
 export default function DemoPreview({ rubro, businessName, onStart }) {
   const [demo, setDemo]       = useState(null)
+  const [vocab, setVocab]     = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loader = DEMO_LOADERS[rubro]
-    if (!loader) { setLoading(false); return }
-    loader().then(mod => {
-      setDemo(mod.default)
+    const demoLoader = DEMO_LOADERS[rubro]
+    const presetLoader = PRESET_LOADERS[rubro]
+    const promises = [
+      demoLoader ? demoLoader().then(m => m.default) : Promise.resolve(FALLBACK_DEMO),
+      presetLoader ? presetLoader().then(m => m.default) : Promise.resolve(null),
+    ]
+    Promise.all(promises).then(([demoData, presetData]) => {
+      setDemo(demoData)
+      setVocab(presetData?.vocabulary ?? null)
       setLoading(false)
     })
   }, [rubro])
@@ -58,6 +75,15 @@ export default function DemoPreview({ rubro, businessName, onStart }) {
   const entities = demo?.entities ?? []
   const transactions = demo?.transactions ?? []
 
+  // Vocabulario dinámico con fallbacks
+  const v = {
+    displayName:  vocab?.dashboard_title ?? 'tu negocio',
+    products:     vocab?.products ?? 'Artículos',
+    transactions: vocab?.transactions ?? 'Remitos',
+    stock:        vocab?.stock ?? 'Stock',
+    entities:     vocab?.entities ?? 'Clientes',
+  }
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 px-4 py-6">
@@ -67,7 +93,7 @@ export default function DemoPreview({ rubro, businessName, onStart }) {
             Así va a quedar {businessName ? `"${businessName}"` : 'tu negocio'}
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Todo configurado para un corralón. Tus datos reales van acá.
+            Todo configurado para vos. Tus datos reales van acá.
           </p>
         </div>
 
@@ -96,19 +122,19 @@ export default function DemoPreview({ rubro, businessName, onStart }) {
               />
               <MetricCard
                 icon="📋"
-                label="Remitos pendientes"
+                label={`${v.transactions} pendientes`}
                 value={summary.remitos_pendientes}
                 color="yellow"
               />
               <MetricCard
                 icon="👥"
-                label="Clientes con deuda"
+                label={`${v.entities} con deuda`}
                 value={summary.clientes_con_deuda}
                 color="red"
               />
               <MetricCard
                 icon="🚛"
-                label="Entregas de hoy"
+                label="Pendientes de hoy"
                 value={summary.entregas_hoy}
                 color="blue"
               />
@@ -119,7 +145,7 @@ export default function DemoPreview({ rubro, businessName, onStart }) {
           {products.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Artículos en stock
+                {v.products} en {v.stock.toLowerCase()}
               </p>
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 {products.slice(0, 4).map((p, i) => (
@@ -151,7 +177,7 @@ export default function DemoPreview({ rubro, businessName, onStart }) {
           {transactions.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Últimos remitos
+                Últimos {v.transactions.toLowerCase()}
               </p>
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 {transactions.map((t, i) => {

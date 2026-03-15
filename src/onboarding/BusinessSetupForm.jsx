@@ -143,7 +143,7 @@ export default function BusinessSetupForm({ onNext }) {
               value={fields.business_name}
               onChange={handleChange('business_name')}
               onBlur={handleBlur('business_name')}
-              placeholder="ej: Corralón Don Julio"
+              placeholder="ej: Mi Negocio"
               maxLength={80}
               className={`
                 w-full rounded-xl border px-4 py-3 text-base text-gray-900
@@ -180,7 +180,7 @@ export default function BusinessSetupForm({ onNext }) {
           {/* Dirección */}
           <FieldGroup
             label="Dirección"
-            hint="La ubicación física del corralón."
+            hint="La ubicación física del negocio."
             saveStatus={saveStatus.address}
           >
             <input
