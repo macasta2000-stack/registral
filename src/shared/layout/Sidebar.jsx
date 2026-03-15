@@ -149,6 +149,34 @@ const ALL_MODULES = [
     labelKey: 'transactions',
     labelFallback: 'Trabajos',
   },
+  {
+    id:       'cobros',
+    path:     '/cobros',
+    icon:     '💵',
+    labelKey: 'transactions',
+    labelFallback: 'Cobros',
+  },
+  {
+    id:       'menu',
+    path:     '/menu',
+    icon:     '📖',
+    labelKey: 'products',
+    labelFallback: 'Menú',
+  },
+  {
+    id:       'reservas',
+    path:     '/reservas',
+    icon:     '📅',
+    labelKey: 'schedules',
+    labelFallback: 'Reservas',
+  },
+  {
+    id:       'consultas',
+    path:     '/consultas',
+    icon:     '🩺',
+    labelKey: 'transactions',
+    labelFallback: 'Consultas',
+  },
 ]
 
 // ─────────────────────────────────────────────────────────────
@@ -156,6 +184,16 @@ const ALL_MODULES = [
 // ─────────────────────────────────────────────────────────────
 
 const PLAN_ORDER = { basico: 0, pro: 1, agencia: 2 }
+
+/**
+ * Módulos que tienen página implementada en el router.
+ * Los módulos de otros rubros que aún no tienen página
+ * se muestran como "Próximamente" en vez de navegar a un 404.
+ */
+const IMPLEMENTED_MODULES = new Set([
+  'dashboard', 'stock', 'remitos', 'clientes',
+  'cuenta_corriente', 'agenda_entregas', 'caja', 'reportes',
+])
 
 // ─────────────────────────────────────────────────────────────
 // SIDEBAR
@@ -212,8 +250,9 @@ export default function Sidebar({ onNavigate }) {
       {/* ── Items de navegación ── */}
       <div className="flex-1 px-3 py-3 space-y-0.5">
         {visibleModules.map(mod => {
-          const locked  = !mod.alwaysShow && !isInPlan(mod.id)
-          const label   = getLabel(mod)
+          const locked      = !mod.alwaysShow && !isInPlan(mod.id)
+          const implemented = mod.alwaysShow || IMPLEMENTED_MODULES.has(mod.id)
+          const label       = getLabel(mod)
 
           return (
             <NavItem
@@ -221,7 +260,8 @@ export default function Sidebar({ onNavigate }) {
               mod={mod}
               label={label}
               locked={locked}
-              onNavigate={locked ? undefined : onNavigate}
+              comingSoon={!implemented}
+              onNavigate={locked || !implemented ? undefined : onNavigate}
             />
           )
         })}
@@ -241,34 +281,33 @@ Sidebar.propTypes = {
 // NAV ITEM
 // ─────────────────────────────────────────────────────────────
 
-function NavItem({ mod, label, locked, onNavigate }) {
+function NavItem({ mod, label, locked, comingSoon, onNavigate }) {
   const baseClass = `
     group flex items-center gap-3 px-3 py-2.5 rounded-xl
     text-sm font-medium transition-all duration-150
     w-full text-left
   `
 
+  const badge = locked ? (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 flex-shrink-0">Pro</span>
+  ) : comingSoon ? (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 flex-shrink-0">Pronto</span>
+  ) : null
+
   const content = (
     <>
-      <span className="text-lg flex-shrink-0 leading-none">{mod.icon}</span>
+      <span className={`text-lg flex-shrink-0 leading-none ${comingSoon ? 'opacity-50' : ''}`}>{mod.icon}</span>
       <span className="flex-1 truncate">{label}</span>
-      {locked && (
-        <span className="
-          text-[10px] font-bold px-1.5 py-0.5 rounded-full
-          bg-amber-100 text-amber-700 flex-shrink-0
-        ">
-          Pro
-        </span>
-      )}
+      {badge}
     </>
   )
 
-  if (locked) {
+  if (locked || comingSoon) {
     return (
       <button
-        className={`${baseClass} text-gray-400 cursor-pointer hover:bg-gray-50`}
+        className={`${baseClass} text-gray-400 ${comingSoon ? 'cursor-default opacity-75' : 'cursor-pointer hover:bg-gray-50'}`}
         data-tour-id={`module-${mod.id}`}
-        title={`Disponible en plan Pro`}
+        title={comingSoon ? 'Próximamente' : 'Disponible en plan Pro'}
       >
         {content}
       </button>
@@ -297,6 +336,7 @@ NavItem.propTypes = {
   mod:        PropTypes.object.isRequired,
   label:      PropTypes.string.isRequired,
   locked:     PropTypes.bool,
+  comingSoon: PropTypes.bool,
   onNavigate: PropTypes.func,
 }
 
