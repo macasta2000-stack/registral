@@ -173,6 +173,16 @@ export default function LoginPage() {
                 {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
               </div>
 
+              {/* Forgot password */}
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+
               {/* Submit */}
               <button
                 type="submit"

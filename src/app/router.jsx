@@ -22,9 +22,11 @@ import AppShell             from '../shared/layout/AppShell'
 // ─────────────────────────────────────────────────────────────
 
 // Auth / Onboarding
-const LoginPage      = lazy(() => import('../core/auth/LoginPage'))
-const RegisterPage   = lazy(() => import('../core/auth/RegisterPage'))
-const OnboardingPage = lazy(() => import('../onboarding/OnboardingPage'))
+const LoginPage            = lazy(() => import('../core/auth/LoginPage'))
+const RegisterPage         = lazy(() => import('../core/auth/RegisterPage'))
+const ForgotPasswordPage   = lazy(() => import('../core/auth/ForgotPasswordPage'))
+const ResetPasswordPage    = lazy(() => import('../core/auth/ResetPasswordPage'))
+const OnboardingPage       = lazy(() => import('../onboarding/OnboardingPage'))
 
 // App pages
 const DashboardPage        = lazy(() => import('../modules/dashboard/DashboardPage'))
@@ -181,8 +183,10 @@ export function AppRouter() {
     <Suspense fallback={<FullPageLoader />}>
       <Routes>
         {/* ── Rutas públicas ── */}
-        <Route path="/login"    element={<SuspensePage><LoginPage /></SuspensePage>} />
-        <Route path="/register" element={<SuspensePage><RegisterPage /></SuspensePage>} />
+        <Route path="/login"           element={<SuspensePage><LoginPage /></SuspensePage>} />
+        <Route path="/register"        element={<SuspensePage><RegisterPage /></SuspensePage>} />
+        <Route path="/forgot-password" element={<SuspensePage><ForgotPasswordPage /></SuspensePage>} />
+        <Route path="/reset-password"  element={<SuspensePage><ResetPasswordPage /></SuspensePage>} />
 
         {/* ── Onboarding — solo si autenticado pero sin completar ── */}
         <Route
