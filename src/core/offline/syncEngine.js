@@ -75,6 +75,11 @@ export function startSyncEngine(tenantId) {
   // Escuchar Supabase Realtime en sync_queue para multi-tab sync
   setupRealtimeSync()
 
+  // Pull inicial: traer datos de Supabase → IndexedDB si están vacíos
+  initialPull(tenantId).catch(err =>
+    console.error('[syncEngine] initialPull falló:', err)
+  )
+
   // Primer intento inmediato
   scheduleSyncLoop()
 
@@ -126,6 +131,54 @@ export async function getSyncStatus() {
     lastSync:  _lastSyncAt,
     isOnline:  _isOnline,
     isRunning: _isRunning,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// INITIAL PULL: Supabase → IndexedDB (una sola vez por tabla)
+// Si la tabla local está vacía, trae todos los registros del tenant.
+// ─────────────────────────────────────────────────────────────
+
+const PULL_TABLES = [
+  'entities',
+  'products',
+  'transactions',
+  'transaction_items',
+  'schedules',
+]
+
+async function initialPull(tenantId) {
+  if (!navigator.onLine) return
+
+  for (const table of PULL_TABLES) {
+    try {
+      const localCount = await db[table]
+        .where('tenant_id')
+        .equals(tenantId)
+        .count()
+
+      // Solo hacer pull si la tabla local está vacía para este tenant
+      if (localCount > 0) continue
+
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .limit(5000)
+
+      if (error) {
+        console.warn(`[syncEngine] initialPull ${table} error:`, error.message)
+        continue
+      }
+
+      if (data && data.length > 0) {
+        const records = data.map(r => ({ ...r, _sync_status: 'synced' }))
+        await db[table].bulkPut(records)
+        console.log(`[syncEngine] initialPull: ${table} → ${records.length} registros`)
+      }
+    } catch (err) {
+      console.warn(`[syncEngine] initialPull ${table} falló:`, err.message)
+    }
   }
 }
 
