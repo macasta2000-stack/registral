@@ -109,9 +109,22 @@ export function PresetProvider({ children }) {
 
     async function loadPreset() {
       try {
-        // Import dinámico — el preset vive en /src/presets/ (bundleado)
-        // Formato de archivo: preset.[rubro].json
-        const mod = await import(`../../presets/preset.${tenantData.rubro}.json`)
+        // Mapa explícito de presets — Vite necesita paths estáticos para
+        // resolver dynamic imports correctamente.
+        const PRESET_MAP = {
+          'correlon':            () => import('../../presets/preset.correlon.json'),
+          'gastronomia':         () => import('../../presets/preset.gastronomia.json'),
+          'medicina':            () => import('../../presets/preset.medicina.json'),
+          'abogacia':            () => import('../../presets/preset.abogacia.json'),
+          'retail':              () => import('../../presets/preset.retail.json'),
+          'servicios-generales': () => import('../../presets/preset.servicios-generales.json'),
+          'servicios_generales': () => import('../../presets/preset.servicios-generales.json'),
+        }
+
+        const rubroSlug = tenantData.rubro.replace(/_/g, '-')
+        const loader = PRESET_MAP[tenantData.rubro] || PRESET_MAP[rubroSlug]
+        if (!loader) throw new Error(`Preset no encontrado para rubro: ${tenantData.rubro}`)
+        const mod = await loader()
         const basePreset = mod.default
 
         // Aplicar restricciones del plan
