@@ -15,12 +15,13 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useAuth }   from '../../core/auth/useAuth'
 import { db }        from '../../core/offline/db'
 import { SyncStatusBar } from '../../core/offline/SyncStatusBar'
+import { GlobalSearch, useGlobalSearchShortcut } from '../ui/GlobalSearch'
 import Sidebar       from './Sidebar'
 
 // ─────────────────────────────────────────────────────────────
@@ -30,11 +31,25 @@ import Sidebar       from './Sidebar'
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { isOpen: searchOpen, open: openSearch, close: closeSearch } = useGlobalSearchShortcut()
 
   // Cerrar drawer al navegar
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  // Ctrl+N → nuevo remito
+  useEffect(() => {
+    function handler(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault()
+        navigate('/remitos', { state: { openNew: true } })
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [navigate])
 
   // Bloquear scroll del body cuando el drawer está abierto
   useEffect(() => {
@@ -63,7 +78,7 @@ export default function AppShell() {
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* TopBar */}
-        <TopBar onHamburger={toggleDrawer} />
+        <TopBar onHamburger={toggleDrawer} onSearchOpen={openSearch} />
 
         {/* Contenido */}
         <main className="
@@ -122,6 +137,9 @@ export default function AppShell() {
 
       {/* ── SYNC STATUS BAR (siempre visible) ── */}
       <SyncStatusBar />
+
+      {/* ── GLOBAL SEARCH (Ctrl+K) ── */}
+      <GlobalSearch isOpen={searchOpen} onClose={closeSearch} />
     </div>
   )
 }
@@ -130,8 +148,9 @@ export default function AppShell() {
 // TOP BAR
 // ─────────────────────────────────────────────────────────────
 
-function TopBar({ onHamburger }) {
+function TopBar({ onHamburger, onSearchOpen }) {
   const { tenant, user, signOut, businessName } = useAuth()
+  const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -194,8 +213,32 @@ function TopBar({ onHamburger }) {
         </h1>
       </div>
 
-      {/* Derecha: notificaciones + avatar */}
+      {/* Derecha: search + notificaciones + avatar */}
       <div className="flex items-center gap-2 flex-shrink-0">
+
+        {/* Search button */}
+        <button
+          onClick={onSearchOpen}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-400 hover:bg-gray-100 transition"
+          aria-label="Buscar (Ctrl+K)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span className="text-xs">Buscar...</span>
+          <kbd className="text-[10px] bg-white border border-gray-200 px-1 py-0.5 rounded font-mono">⌘K</kbd>
+        </button>
+
+        {/* Search icon mobile */}
+        <button
+          onClick={onSearchOpen}
+          className="sm:hidden w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition"
+          aria-label="Buscar"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
 
         {/* Notificaciones */}
         <button
@@ -234,6 +277,7 @@ function TopBar({ onHamburger }) {
               businessName={businessName}
               onSignOut={() => { setUserMenuOpen(false); signOut() }}
               onClose={() => setUserMenuOpen(false)}
+              onNavigate={(path) => { setUserMenuOpen(false); navigate(path) }}
             />
           )}
         </div>
@@ -243,14 +287,15 @@ function TopBar({ onHamburger }) {
 }
 
 TopBar.propTypes = {
-  onHamburger: PropTypes.func.isRequired,
+  onHamburger:  PropTypes.func.isRequired,
+  onSearchOpen: PropTypes.func.isRequired,
 }
 
 // ─────────────────────────────────────────────────────────────
 // USER DROPDOWN
 // ─────────────────────────────────────────────────────────────
 
-function UserDropdown({ user, businessName, onSignOut, onClose }) {
+function UserDropdown({ user, businessName, onSignOut, onClose, onNavigate }) {
   return (
     <div className="
       absolute right-0 top-11 z-50
@@ -268,7 +313,7 @@ function UserDropdown({ user, businessName, onSignOut, onClose }) {
       {/* Opciones */}
       <div className="py-1">
         <button
-          onClick={onClose}
+          onClick={() => { onClose(); onNavigate('/configuracion') }}
           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
         >
           <span className="text-base">⚙️</span>
@@ -291,6 +336,7 @@ UserDropdown.propTypes = {
   businessName: PropTypes.string,
   onSignOut:    PropTypes.func.isRequired,
   onClose:      PropTypes.func.isRequired,
+  onNavigate:   PropTypes.func.isRequired,
 }
 
 // ─────────────────────────────────────────────────────────────

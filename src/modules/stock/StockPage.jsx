@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import { usePreset }       from '../../core/engine/PresetContext'
 import { useProducts, useLowStockProducts } from './useStock'
 import ProductModal         from './ProductModal'
@@ -15,6 +16,7 @@ import {
 } from '../../shared/ui/index'
 
 export default function StockPage() {
+  useDocumentTitle('Stock')
   const { preset }       = usePreset()
   const location         = useLocation()
   const navigate         = useNavigate()

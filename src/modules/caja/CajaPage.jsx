@@ -7,6 +7,8 @@
  */
 
 import { useState, useMemo } from 'react'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
+import { toast } from '../../shared/ui/Toast'
 import {
   useCurrentSession,
   useCajaMovements,
@@ -51,6 +53,7 @@ const PAYMENT_METHODS = [
 // ─────────────────────────────────────────────────────────────
 
 export default function CajaPage() {
+  useDocumentTitle('Caja')
   const session    = useCurrentSession()
   const movements  = useCajaMovements(session?.id)
   const history    = useCajaHistory()
@@ -278,6 +281,7 @@ export default function CajaPage() {
           onOpen={async (balance) => {
             await actions.openSession(balance)
             setShowOpenModal(false)
+            toast.success('Caja abierta')
           }}
         />
       )}
@@ -289,6 +293,7 @@ export default function CajaPage() {
           onConfirm={async (actualBalance, notes) => {
             await actions.closeSession(session.id, actualBalance, notes)
             setShowCloseModal(false)
+            toast.success('Caja cerrada')
           }}
         />
       )}
@@ -299,6 +304,7 @@ export default function CajaPage() {
           onSave={async (data) => {
             await actions.addMovement(session.id, data)
             setShowMovModal(false)
+            toast.success(data.movement_type === 'ingreso' ? 'Ingreso registrado' : 'Egreso registrado')
           }}
         />
       )}

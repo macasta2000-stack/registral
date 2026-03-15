@@ -15,6 +15,8 @@ import {
 import { useAuth } from '../../core/auth/useAuth'
 import { usePreset } from '../../core/engine/PresetContext'
 import { db } from '../../core/offline/db'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
+import { exportToCSV } from '../../shared/ui/csvExport'
 import {
   PageHeader, ModalSheet, EmptyState, formatARS, formatNumber,
 } from '../../shared/ui/index'
@@ -250,6 +252,7 @@ function buildTopClientsReport(transactions, entities, periodStart) {
 // ─────────────────────────────────────────────────────────────
 
 export default function ReportesPage() {
+  useDocumentTitle('Reportes')
   const { preset } = usePreset()
   const vocab = preset?.vocabulary ?? {}
 
@@ -514,8 +517,13 @@ function ExpandedReport({ report, period, onClose }) {
           <button
             className="flex-1 py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition active:scale-[0.98]"
             onClick={() => {
-              // Placeholder for export
-              alert('Funcion de exportacion disponible proximamente.')
+              if (reportData?.chartData?.length) {
+                exportToCSV(
+                  reportData.chartData,
+                  `${title.toLowerCase().replace(/\s+/g, '-')}-${period}`,
+                  { name: 'Nombre', value: 'Valor' }
+                )
+              }
             }}
           >
             📤 Exportar

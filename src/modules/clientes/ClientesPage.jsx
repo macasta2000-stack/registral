@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import { usePreset }   from '../../core/engine/PresetContext'
 import { useClientes } from './useClientes'
 import ClienteModal     from './ClienteModal'
@@ -13,6 +14,7 @@ import {
 } from '../../shared/ui/index'
 
 export default function ClientesPage() {
+  useDocumentTitle('Clientes')
   const { preset }     = usePreset()
   const location       = useLocation()
   const navigate       = useNavigate()

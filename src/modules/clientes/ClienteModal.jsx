@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { toast }        from '../../shared/ui/Toast'
 import { usePreset }    from '../../core/engine/PresetContext'
 import DynamicForm      from '../../shared/forms/DynamicForm'
 import { useClienteActions, useClienteBalance } from './useClientes'
@@ -35,9 +36,11 @@ export default function ClienteModal({ cliente, onClose }) {
     setSubmitError('')
     try {
       await createCliente(values)
+      toast.success('Cliente creado')
       onClose()
     } catch (err) {
       setSubmitError(err.message)
+      toast.error('Error al crear cliente')
     } finally {
       setSubmitting(false)
     }
@@ -45,6 +48,7 @@ export default function ClienteModal({ cliente, onClose }) {
 
   async function handleDelete() {
     await deleteCliente(cliente.id)
+    toast.success('Cliente eliminado')
     setShowDelete(false)
     onClose()
   }
@@ -56,10 +60,12 @@ export default function ClienteModal({ cliente, onClose }) {
     setPagoError('')
     try {
       await registrarPago(cliente.id, amount, pagoForm.notes)
+      toast.success('Pago registrado')
       setShowPago(false)
       setPagoForm({ amount: '', notes: '' })
     } catch (err) {
       setPagoError(err.message)
+      toast.error('Error al registrar pago')
     } finally {
       setPagando(false)
     }

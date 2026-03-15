@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { toast }        from '../../shared/ui/Toast'
 import { usePreset }    from '../../core/engine/PresetContext'
 import { useAuth }      from '../../core/auth/useAuth'
 import DynamicForm      from '../../shared/forms/DynamicForm'
@@ -54,9 +55,11 @@ export default function ProductModal({ product, onClose }) {
     setSubmitError('')
     try {
       await createProduct(values)
+      toast.success('Artículo creado')
       onClose()
     } catch (err) {
       setSubmitError(err.message)
+      toast.error('Error al crear artículo')
     } finally {
       setSubmitting(false)
     }
@@ -73,10 +76,12 @@ export default function ProductModal({ product, onClose }) {
     setAdjustError('')
     try {
       await adjustStock(product.id, Number(adjustForm.quantity), adjustForm.movementType, adjustForm.reason)
+      toast.success('Stock actualizado')
       setShowAdjust(false)
       setAdjustForm({ quantity: '', movementType: 'entrada', reason: '' })
     } catch (err) {
       setAdjustError(err.message)
+      toast.error('Error al ajustar stock')
     } finally {
       setAdjusting(false)
     }
@@ -86,6 +91,7 @@ export default function ProductModal({ product, onClose }) {
 
   async function handleDelete() {
     await deleteProduct(product.id)
+    toast.success('Artículo eliminado')
     setShowDeleteConfirm(false)
     onClose()
   }

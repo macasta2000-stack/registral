@@ -12,6 +12,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useAuth } from '../../core/auth/useAuth'
 import { useAutoSave } from '../../core/engine/useAutoSave'
 import { db } from '../../core/offline/db'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import {
   PageHeader, PrimaryButton, ModalSheet, EmptyState,
   formatDate, formatDateTime, uuid4,
@@ -105,6 +106,7 @@ function useSchedules(weekDates) {
 // ─────────────────────────────────────────────────────────────
 
 export default function AgendaEntregasPage() {
+  useDocumentTitle('Agenda de Entregas')
   const { tenantId } = useAuth()
   const { save } = useAutoSave()
 

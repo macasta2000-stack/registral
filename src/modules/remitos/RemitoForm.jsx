@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { toast }       from '../../shared/ui/Toast'
 import { usePreset }   from '../../core/engine/PresetContext'
 import { useAuth }     from '../../core/auth/useAuth'
 import { db }          from '../../core/offline/db'
@@ -147,11 +148,15 @@ export default function RemitoForm({ onClose }) {
         // bulkSave retorna la primera op que es el remito
         const remitoId = result?.[0]?.id ?? null
         if (remitoId) await confirmRemito(remitoId)
+        toast.success('Remito creado y confirmado')
+      } else {
+        toast.success('Borrador guardado')
       }
 
       onClose()
     } catch (err) {
       setSubmitError(err.message)
+      toast.error('Error al guardar remito')
     } finally {
       setSubmitting(false)
     }

@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import {
   AreaChart,
   Area,
@@ -425,6 +426,7 @@ const STATUS_LABELS = {
 // ─────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  useDocumentTitle('Panel')
   const { tenantId, businessName, user } = useAuth()
   const { t } = useVocabulary()
   const { metrics } = useDashboard()

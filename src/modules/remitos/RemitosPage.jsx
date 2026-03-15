@@ -5,6 +5,8 @@
 
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
+import { toast }           from '../../shared/ui/Toast'
 import { usePreset }       from '../../core/engine/PresetContext'
 import { useRemitos, useRemitoActions } from './useRemitos'
 import { useLiveQuery }    from 'dexie-react-hooks'
@@ -27,6 +29,7 @@ const STATUS_TABS = [
 ]
 
 export default function RemitosPage() {
+  useDocumentTitle('Remitos')
   const { preset }   = usePreset()
   const { tenantId } = useAuth()
   const location     = useLocation()
@@ -72,11 +75,12 @@ export default function RemitosPage() {
   async function executeAction(type, id) {
     setActionLoading(id)
     try {
-      if (type === 'confirm')  await confirmRemito(id)
-      if (type === 'deliver')  await deliverRemito(id)
-      if (type === 'cancel')   await cancelRemito(id)
+      if (type === 'confirm')  { await confirmRemito(id); toast.success('Remito confirmado') }
+      if (type === 'deliver')  { await deliverRemito(id); toast.success('Remito marcado como entregado') }
+      if (type === 'cancel')   { await cancelRemito(id); toast.success('Remito anulado') }
     } catch (err) {
       console.error('[RemitosPage]', err)
+      toast.error('Error: ' + (err.message || 'No se pudo completar la acción'))
     } finally {
       setActionLoading(null)
       setConfirmAction(null)

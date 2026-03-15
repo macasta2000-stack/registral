@@ -35,6 +35,7 @@ const AgendaEntregasPage   = lazy(() => import('../modules/agenda-entregas/Agend
 const ClientesPage         = lazy(() => import('../modules/clientes/ClientesPage'))
 const CajaPage             = lazy(() => import('../modules/caja/CajaPage'))
 const ReportesPage         = lazy(() => import('../modules/reportes/ReportesPage'))
+const ConfiguracionPage    = lazy(() => import('../modules/configuracion/ConfiguracionPage'))
 
 // ─────────────────────────────────────────────────────────────
 // SUSPENSE FALLBACK
@@ -232,6 +233,12 @@ export function AppRouter() {
           <Route path="reportes" element={<ModuleGuard moduleId="reportes" />}>
             <Route index element={<SuspensePage><ReportesPage /></SuspensePage>} />
           </Route>
+
+          {/* Configuración — siempre habilitado, sin ModuleGuard */}
+          <Route
+            path="configuracion"
+            element={<SuspensePage><ConfiguracionPage /></SuspensePage>}
+          />
 
           {/* 404 dentro del shell */}
           <Route path="*" element={<NotFoundPage />} />

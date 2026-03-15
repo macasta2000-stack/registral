@@ -11,6 +11,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { usePreset } from '../../core/engine/PresetContext'
 import { useAuth } from '../../core/auth/useAuth'
 import { db } from '../../core/offline/db'
+import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import {
   PageHeader, EmptyState, formatARS, formatDate,
 } from '../../shared/ui/index'
@@ -85,6 +86,7 @@ function getLastPaymentDate(entityId, movements) {
 // ─────────────────────────────────────────────────────────────
 
 export default function CuentaCorrientePage() {
+  useDocumentTitle('Cuenta Corriente')
   const { preset } = usePreset()
   const vocab = preset?.vocabulary ?? {}
   const clienteLabel = vocab.client ?? 'Cliente'
