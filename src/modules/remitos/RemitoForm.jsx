@@ -22,7 +22,7 @@ import {
   formatARS, formatNumber, uuid4, Spinner, PageHeader,
 } from '../../shared/ui/index'
 
-const PAYMENT_METHODS = [
+const DEFAULT_PAYMENT_METHODS = [
   'Efectivo', 'Transferencia', 'Cheque', 'Tarjeta débito',
   'Tarjeta crédito', 'Cuenta corriente',
 ]
@@ -43,6 +43,18 @@ export default function RemitoForm({ onClose }) {
   const { tenantId } = useAuth()
   const vocab        = preset?.vocabulary ?? {}
   const transLabel   = vocab.transaction ?? 'Remito'
+  const productLabel = vocab.product ?? 'Artículo'
+
+  // Campos extra del preset (con_flete, chofer, etc.)
+  const remitosConfig = preset?.modules_config?.remitos ?? {}
+  const fieldsExtra   = remitosConfig.fields_extra ?? []
+  const showFlete     = fieldsExtra.includes('con_flete')
+
+  // Payment methods: from preset transaction schema or defaults
+  const presetPaymentMethods = preset?.fields?.transaction?.schema?.payment_method?.options
+    ?? preset?.modules_config?.ventas?.payment_methods
+    ?? null
+  const paymentMethods = presetPaymentMethods ?? DEFAULT_PAYMENT_METHODS
 
   const { createRemito, confirmRemito } = useRemitoActions()
 
@@ -148,7 +160,7 @@ export default function RemitoForm({ onClose }) {
         // bulkSave retorna la primera op que es el remito
         const remitoId = result?.[0]?.id ?? null
         if (remitoId) await confirmRemito(remitoId)
-        toast.success('Remito creado y confirmado')
+        toast.success(`${transLabel} creado y confirmado`)
       } else {
         toast.success('Borrador guardado')
       }
@@ -156,7 +168,7 @@ export default function RemitoForm({ onClose }) {
       onClose()
     } catch (err) {
       setSubmitError(err.message)
-      toast.error('Error al guardar remito')
+      toast.error(`Error al guardar ${transLabel.toLowerCase()}`)
     } finally {
       setSubmitting(false)
     }
@@ -192,19 +204,21 @@ export default function RemitoForm({ onClose }) {
           />
         </Section>
 
-        {/* ── CAMPOS EXTRA PRESET ── */}
-        <Section title="Entrega">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-gray-700">Incluye flete</span>
-            <ToggleSwitch checked={conFlete} onChange={setConFlete} />
-          </div>
-          {conFlete && (
-            <div className="space-y-3 mt-2">
-              <FieldInput label="Dirección de entrega" value={dirEntrega} onChange={setDirEntrega} placeholder="Dirección donde se entrega" />
-              <FieldInput label="Chofer" value={chofer} onChange={setChofer} placeholder="Nombre del chofer" />
+        {/* ── CAMPOS EXTRA PRESET (solo si el preset lo define) ── */}
+        {showFlete && (
+          <Section title="Entrega">
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-gray-700">Incluye flete</span>
+              <ToggleSwitch checked={conFlete} onChange={setConFlete} />
             </div>
-          )}
-        </Section>
+            {conFlete && (
+              <div className="space-y-3 mt-2">
+                <FieldInput label="Dirección de entrega" value={dirEntrega} onChange={setDirEntrega} placeholder="Dirección donde se entrega" />
+                <FieldInput label="Chofer" value={chofer} onChange={setChofer} placeholder="Nombre del chofer" />
+              </div>
+            )}
+          </Section>
+        )}
 
         {/* ── ÍTEMS ── */}
         <Section
@@ -226,6 +240,7 @@ export default function RemitoForm({ onClose }) {
                 onRemove={() => removeItem(item._key)}
                 canRemove={items.length > 1}
                 index={idx}
+                productLabel={productLabel}
               />
             ))}
           </div>
@@ -242,7 +257,7 @@ export default function RemitoForm({ onClose }) {
                 className="w-full text-sm border border-gray-200 bg-white rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
                 <option value="">Seleccioná forma de pago</option>
-                {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div>
@@ -305,7 +320,7 @@ RemitoForm.propTypes = { onClose: PropTypes.func.isRequired }
 // ItemRow — fila de ítem con búsqueda de producto
 // ─────────────────────────────────────────────────────────────
 
-function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemove, index }) {
+function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemove, index, productLabel = 'artículo' }) {
   const [productQuery, setProductQuery] = useState(item.description ?? '')
   const [showResults, setShowResults]   = useState(false)
   const [debQ, setDebQ]                 = useState('')
@@ -368,7 +383,7 @@ function ItemRow({ item, tenantId, onUpdate, onSelectProduct, onRemove, canRemov
           value={productQuery}
           onChange={handleQueryChange}
           onFocus={() => setShowResults(true)}
-          placeholder="Buscar artículo o escribir descripción..."
+          placeholder={`Buscar ${productLabel.toLowerCase()} o escribir descripción...`}
           autoComplete="off"
           className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
