@@ -236,7 +236,7 @@ function TopBar({ onHamburger, onSearchOpen }) {
         {/* Notificaciones */}
         <div className="relative">
           <button
-            onClick={() => setNotifOpen(s => !s)}
+            onClick={() => { setNotifOpen(s => !s); setUserMenuOpen(false) }}
             className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition"
             aria-label={`${unreadCount} notificaciones sin leer`}
           >
@@ -256,7 +256,7 @@ function TopBar({ onHamburger, onSearchOpen }) {
         {/* Avatar / User menu */}
         <div className="relative" ref={menuRef}>
           <button
-            onClick={() => setUserMenuOpen(s => !s)}
+            onClick={() => { setUserMenuOpen(s => !s); setNotifOpen(false) }}
             className="
               w-9 h-9 rounded-xl bg-amber-100 text-amber-700
               flex items-center justify-center
