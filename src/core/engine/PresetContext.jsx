@@ -26,7 +26,7 @@ import {
   useState,
   useCallback,
 } from 'react'
-import { supabase } from '../supabase/client'
+import { useAuth } from '../auth/useAuth'
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTES
@@ -83,50 +83,23 @@ const PresetContext = createContext(null)
  * Lee el tenant del contexto de auth y carga el preset correspondiente.
  */
 export function PresetProvider({ children }) {
+  const { tenant, userRole, loading: authLoading } = useAuth()
   const [preset, setPreset]           = useState(null)
-  const [tenantData, setTenantData]   = useState(null)
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
 
-  // Cargar datos del tenant desde Supabase
+  // Construir tenantData directamente desde AuthContext (sin queries adicionales)
+  const tenantData = useMemo(() => {
+    if (!tenant) return null
+    return { ...tenant, userRole: userRole ?? 'owner' }
+  }, [tenant, userRole])
+
+  // Si auth terminó de cargar y no hay tenant, no hay preset que cargar
   useEffect(() => {
-    let cancelled = false
-
-    async function loadTenant() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          setLoading(false)
-          return
-        }
-
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('tenant_id, role')
-          .eq('id', user.id)
-          .single()
-
-        if (userError) throw userError
-
-        const { data: tenant, error: tenantError } = await supabase
-          .from('tenants')
-          .select('id, rubro, plan, billing_status, settings, preset_config, usage_stats')
-          .eq('id', userData.tenant_id)
-          .single()
-
-        if (tenantError) throw tenantError
-
-        if (!cancelled) {
-          setTenantData({ ...tenant, userRole: userData.role })
-        }
-      } catch (err) {
-        if (!cancelled) setError(err.message)
-      }
+    if (!authLoading && !tenant) {
+      setLoading(false)
     }
-
-    loadTenant()
-    return () => { cancelled = true }
-  }, [])
+  }, [authLoading, tenant])
 
   // Cargar preset cuando tenemos el rubro del tenant
   useEffect(() => {

@@ -63,7 +63,7 @@ const AuthContext = createContext(null)
 // ─────────────────────────────────────────────────────────────
 
 async function fetchUserAndTenant(authUserId) {
-  // Traer el user row (con tenant_id + role)
+  // Traer user row primero (necesitamos tenant_id para la segunda query)
   const { data: userRow, error: userError } = await supabase
     .from('users')
     .select('tenant_id, role, full_name, is_active')
@@ -71,7 +71,6 @@ async function fetchUserAndTenant(authUserId) {
     .single()
 
   if (userError || !userRow) {
-    // El user row puede no existir todavía si el provisioning aún está en curso
     return { userRow: null, tenant: null }
   }
 
@@ -79,10 +78,10 @@ async function fetchUserAndTenant(authUserId) {
     throw new Error('Tu cuenta está desactivada. Contactá al administrador.')
   }
 
-  // Traer el tenant completo
+  // Traer tenant completo (incluye campos que PresetContext necesita)
   const { data: tenant, error: tenantError } = await supabase
     .from('tenants')
-    .select('*')
+    .select('id, name, rubro, plan, billing_status, settings, preset_config, usage_stats')
     .eq('id', userRow.tenant_id)
     .single()
 
