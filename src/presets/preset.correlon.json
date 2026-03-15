@@ -58,7 +58,7 @@
       ]
     },
     "stock": {
-      "unit_types": ["unidad", "kg", "m3", "litro", "metro", "bolsa", "rollo", "placa", "tonelada"],
+      "unit_types": ["unidad", "kg", "m3", "litro", "metro", "bolsa", "rollo", "placa", "tonelada", "pieza", "par", "juego", "paquete", "caja", "balde", "lata", "caño"],
       "default_unit": "unidad",
       "show_bulk_pricing": true,
       "show_cost": true,
@@ -74,6 +74,11 @@
         "Herramientas",
         "Revestimientos",
         "Techos y cubiertas",
+        "Aberturas y puertas",
+        "Sanitarios y grifería",
+        "Tanques y depósitos",
+        "Aislaciones",
+        "Ferretería general",
         "Otros"
       ]
     },
@@ -108,11 +113,12 @@
   "fields": {
     "product": {
       "required": ["name", "price", "stock_minimum"],
-      "optional": ["unit_type", "code", "description", "category", "price_bulk", "bulk_threshold", "cost", "stock_location", "supplier"],
+      "optional": ["unit_type", "presentation", "code", "description", "category", "price_bulk", "bulk_threshold", "cost", "stock_location", "supplier"],
       "locked": [],
       "schema": {
         "code":            { "type": "text",   "label": "Código",              "placeholder": "ej: CEM-001" },
-        "name":            { "type": "text",   "label": "Artículo",            "placeholder": "ej: Cemento Portland x 50kg" },
+        "name":            { "type": "text",   "label": "Artículo",            "placeholder": "ej: Cemento Portland" },
+        "presentation":    { "type": "text",   "label": "Presentación",        "placeholder": "ej: x 50kg, 70x200cm, 20 lts", "note": "Diferencia variantes de un mismo producto" },
         "description":     { "type": "textarea","label": "Descripción",         "placeholder": "" },
         "category":        { "type": "select", "label": "Categoría",           "source": "modules_config.stock.categories" },
         "unit_type":       { "type": "select", "label": "Unidad de medida",    "source": "modules_config.stock.unit_types", "default": "unidad" },

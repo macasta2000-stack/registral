@@ -118,7 +118,7 @@ export function useAutoSave() {
     setSaving(false)
 
     // ── PASO 5: Commit a Supabase ─────────────────────────────────
-    const cleanPayload = cleanRecord(recordFull)
+    const cleanPayload = cleanRecord(recordFull, tableName)
 
     try {
       let supabaseError
@@ -140,7 +140,10 @@ export function useAutoSave() {
         supabaseError = e
       }
 
-      if (supabaseError) throw new Error(supabaseError.message)
+      if (supabaseError) {
+        console.error(`[useAutoSave] ${operation} ${tableName} falló:`, supabaseError.message, supabaseError.details, supabaseError.hint)
+        throw new Error(supabaseError.message)
+      }
 
       // ── Supabase OK: limpiar pendingOps y marcar como synced ─────
       await markSynced(tableName, recordId)
@@ -308,7 +311,7 @@ export function useBulkSave() {
       // Por simplicidad y trazabilidad: insert secuencial con Promise.all
       const results = await Promise.allSettled(
         operations.map((op, i) => {
-          const clean = cleanRecord({ ...op.record, id: completed[i].id })
+          const clean = cleanRecord({ ...op.record, id: completed[i].id }, op.table)
           const opType = op.operation ?? (op.record.id ? 'UPDATE' : 'INSERT')
 
           if (opType === 'INSERT') return supabase.from(op.table).insert(clean)

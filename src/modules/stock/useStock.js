@@ -143,6 +143,22 @@ export function useStockActions() {
     const productId = uuid4()
     const now       = new Date().toISOString()
 
+    // Known DB columns — everything else goes into the `data` JSON field
+    const DB_COLUMNS = new Set([
+      'id', 'tenant_id', 'code', 'name', 'description', 'category',
+      'unit_type', 'price', 'price_bulk', 'bulk_threshold', 'cost',
+      'stock_current', 'stock_minimum', 'stock_location', 'supplier',
+      'data', 'is_active', 'created_at', 'updated_at',
+    ])
+
+    // Collect extra fields (presentation, etc.) into `data` JSON
+    const extraData = {}
+    for (const [key, val] of Object.entries(data)) {
+      if (!DB_COLUMNS.has(key) && val !== '' && val !== null && val !== undefined && !key.startsWith('_')) {
+        extraData[key] = val
+      }
+    }
+
     const product = {
       id:            productId,
       tenant_id:     tenantId,
@@ -159,7 +175,7 @@ export function useStockActions() {
       stock_minimum: Number(data.stock_minimum) || 0,
       stock_location:data.stock_location || null,
       supplier:      data.supplier || null,
-      data:          {},
+      data:          extraData,
       is_active:     true,
       created_at:    now,
       updated_at:    now,
@@ -195,16 +211,36 @@ export function useStockActions() {
    * Actualiza un producto existente.
    * NO modifica stock_current directamente — usar adjustStock.
    */
-  const updateProduct = useCallback(async (id, data) => {
+  const updateProduct = useCallback(async (id, formData) => {
     const current = await db.products.get(id)
     if (!current) throw new Error('Producto no encontrado')
 
+    // Known DB columns — everything else merges into `data` JSON
+    const DB_COLUMNS = new Set([
+      'id', 'tenant_id', 'code', 'name', 'description', 'category',
+      'unit_type', 'price', 'price_bulk', 'bulk_threshold', 'cost',
+      'stock_current', 'stock_minimum', 'stock_location', 'supplier',
+      'data', 'is_active', 'created_at', 'updated_at',
+    ])
+
+    const extraData = { ...(current.data || {}) }
+    const dbFields = {}
+    for (const [key, val] of Object.entries(formData)) {
+      if (key.startsWith('_')) continue
+      if (DB_COLUMNS.has(key)) {
+        dbFields[key] = val
+      } else if (val !== '' && val !== null && val !== undefined) {
+        extraData[key] = val
+      }
+    }
+
     const updated = {
       ...current,
-      ...data,
+      ...dbFields,
+      data:          extraData,
       id,
-      tenant_id:  tenantId,
-      updated_at: new Date().toISOString(),
+      tenant_id:     tenantId,
+      updated_at:    new Date().toISOString(),
       // Proteger stock_current — solo se modifica via adjustStock
       stock_current: current.stock_current,
     }

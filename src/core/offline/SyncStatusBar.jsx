@@ -184,6 +184,17 @@ export function SyncStatusBar() {
     setShowModal(false)
   }
 
+  async function handleDiscard() {
+    // Eliminar operaciones fallidas de la cola (datos quedan en IndexedDB local)
+    await db.pendingOps
+      .where('status')
+      .equals('failed')
+      .delete()
+
+    await retry()
+    setShowModal(false)
+  }
+
   return (
     <>
       <Bar
@@ -198,6 +209,7 @@ export function SyncStatusBar() {
         <FailedOpsModal
           ops={failedOps}
           onRetry={handleRetry}
+          onDiscard={handleDiscard}
           onClose={() => setShowModal(false)}
         />
       )}
@@ -312,7 +324,7 @@ Bar.propTypes = {
 // Modal: detalle de operaciones fallidas
 // ─────────────────────────────────────────────────────────────
 
-function FailedOpsModal({ ops, onRetry, onClose }) {
+function FailedOpsModal({ ops, onRetry, onDiscard, onClose }) {
   return (
     <>
       {/* Overlay */}
@@ -379,19 +391,24 @@ function FailedOpsModal({ ops, onRetry, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onRetry}
-            className="flex-1 py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold"
-          >
-            Reintentar ahora
-          </button>
+        <div className="px-5 py-4 border-t border-gray-100 space-y-2">
+          <div className="flex gap-3">
+            <button
+              onClick={onDiscard}
+              className="flex-1 py-3 rounded-xl border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition"
+            >
+              Descartar cambios
+            </button>
+            <button
+              onClick={onRetry}
+              className="flex-1 py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold"
+            >
+              Reintentar ahora
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-400 text-center">
+            Los datos locales se mantienen aunque descartes los cambios pendientes.
+          </p>
         </div>
       </div>
     </>
@@ -399,9 +416,10 @@ function FailedOpsModal({ ops, onRetry, onClose }) {
 }
 
 FailedOpsModal.propTypes = {
-  ops:     PropTypes.array.isRequired,
-  onRetry: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
+  ops:       PropTypes.array.isRequired,
+  onRetry:   PropTypes.func.isRequired,
+  onDiscard: PropTypes.func.isRequired,
+  onClose:   PropTypes.func.isRequired,
 }
 
 // ─────────────────────────────────────────────────────────────

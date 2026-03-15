@@ -137,7 +137,7 @@ function resolveMergeFields(table, clientRecord, serverRecord) {
     ? (clientTime > serverTime ? clientRecord.updated_at : serverRecord.updated_at)
     : (serverRecord.updated_at ?? clientRecord.updated_at)
 
-  return cleanRecord(merged)
+  return cleanRecord(merged, table)
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -215,12 +215,76 @@ function isInfraField(key) {
 }
 
 /**
- * Limpia campos de infraestructura antes de enviar al servidor.
+ * Columnas conocidas por tabla en Supabase.
+ * Si una tabla tiene whitelist, solo se envían esas columnas.
+ * Esto previene errores "column X does not exist" cuando IndexedDB tiene campos extra.
  */
-export function cleanRecord(record) {
+const KNOWN_COLUMNS = {
+  products: new Set([
+    'id', 'tenant_id', 'code', 'name', 'description', 'category',
+    'unit_type', 'price', 'price_bulk', 'bulk_threshold', 'cost',
+    'stock_current', 'stock_minimum', 'stock_location', 'supplier',
+    'data', 'is_active', 'created_at', 'updated_at',
+  ]),
+  entities: new Set([
+    'id', 'tenant_id', 'name', 'code', 'entity_type', 'balance',
+    'credit_limit', 'data', 'is_active', 'created_at', 'updated_at',
+  ]),
+  transactions: new Set([
+    'id', 'tenant_id', 'entity_id', 'transaction_type', 'number',
+    'status', 'total', 'payment_method', 'notes', 'data',
+    'is_active', 'created_at', 'updated_at',
+  ]),
+  transaction_items: new Set([
+    'id', 'tenant_id', 'transaction_id', 'product_id', 'product_name',
+    'quantity', 'unit_price', 'subtotal', 'data',
+    'created_at', 'updated_at',
+  ]),
+  stock_movements: new Set([
+    'id', 'tenant_id', 'product_id', 'movement_type', 'quantity',
+    'stock_before', 'stock_after', 'transaction_id', 'reason',
+    'created_by', 'data', 'created_at',
+  ]),
+  accounts_receivable: new Set([
+    'id', 'tenant_id', 'entity_id', 'transaction_id', 'amount',
+    'balance_before', 'balance_after', 'movement_type', 'description',
+    'is_paid', 'data', 'created_at',
+  ]),
+  caja_sessions: new Set([
+    'id', 'tenant_id', 'status', 'opening_balance', 'closing_balance',
+    'current_balance', 'actual_balance', 'difference',
+    'total_ingresos', 'total_egresos',
+    'opened_by', 'opened_by_name', 'closed_by',
+    'opened_at', 'closed_at', 'closing_notes', 'data',
+  ]),
+  caja_movements: new Set([
+    'id', 'tenant_id', 'session_id', 'movement_type', 'amount',
+    'balance_after', 'category', 'description', 'payment_method',
+    'data', 'created_by', 'created_at',
+  ]),
+  schedules: new Set([
+    'id', 'tenant_id', 'entity_id', 'transaction_id', 'schedule_type',
+    'title', 'description', 'status', 'scheduled_at', 'completed_at',
+    'data', 'created_at', 'updated_at',
+  ]),
+  notifications: new Set([
+    'id', 'tenant_id', 'title', 'body', 'priority', 'category',
+    'is_read', 'data', 'created_at', 'expires_at',
+  ]),
+}
+
+/**
+ * Limpia campos de infraestructura y campos desconocidos antes de enviar al servidor.
+ * @param {Object} record - Registro a limpiar
+ * @param {string} [tableName] - Si se pasa, filtra por whitelist de columnas conocidas
+ */
+export function cleanRecord(record, tableName) {
+  const whitelist = tableName ? KNOWN_COLUMNS[tableName] : null
   const clean = {}
   for (const [key, val] of Object.entries(record)) {
-    if (!isInfraField(key)) clean[key] = val
+    if (isInfraField(key)) continue
+    if (whitelist && !whitelist.has(key)) continue
+    clean[key] = val
   }
   return clean
 }

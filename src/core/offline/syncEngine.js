@@ -258,7 +258,7 @@ async function executeWithRetry(op) {
 // ─────────────────────────────────────────────────────────────
 
 async function executeInsert(tableName, payload) {
-  const clean = cleanRecord(payload)
+  const clean = cleanRecord(payload, tableName)
 
   // Para APPEND_ONLY: verificar si ya existe por client_id antes de insertar
   const clientId = payload._client_id
@@ -276,7 +276,10 @@ async function executeInsert(tableName, payload) {
   }
 
   const { error } = await supabase.from(tableName).insert(clean)
-  if (error) throw new Error(error.message)
+  if (error) {
+    console.error(`[syncEngine] INSERT ${tableName} falló:`, error.message, error.details, error.hint, { payload: clean })
+    throw new Error(error.message)
+  }
 }
 
 async function executeUpdate(tableName, recordId, payload) {
@@ -298,13 +301,16 @@ async function executeUpdate(tableName, recordId, payload) {
     return
   }
 
-  const clean = cleanRecord(resolved)
+  const clean = cleanRecord(resolved, tableName)
   const { error } = await supabase
     .from(tableName)
     .update(clean)
     .eq('id', recordId)
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    console.error(`[syncEngine] UPDATE ${tableName}/${recordId} falló:`, error.message, error.details, error.hint, { payload: clean })
+    throw new Error(error.message)
+  }
 
   // Actualizar IndexedDB con la versión resuelta
   await db[tableName]?.put({ ...resolved, _sync_status: 'synced' })
