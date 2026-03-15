@@ -107,15 +107,15 @@
 
   "fields": {
     "product": {
-      "required": ["name", "unit_type", "price", "stock_minimum"],
-      "optional": ["code", "description", "category", "price_bulk", "bulk_threshold", "cost", "stock_location", "supplier"],
+      "required": ["name", "price", "stock_minimum"],
+      "optional": ["unit_type", "code", "description", "category", "price_bulk", "bulk_threshold", "cost", "stock_location", "supplier"],
       "locked": [],
       "schema": {
         "code":            { "type": "text",   "label": "Código",              "placeholder": "ej: CEM-001" },
         "name":            { "type": "text",   "label": "Artículo",            "placeholder": "ej: Cemento Portland x 50kg" },
         "description":     { "type": "textarea","label": "Descripción",         "placeholder": "" },
         "category":        { "type": "select", "label": "Categoría",           "source": "modules_config.stock.categories" },
-        "unit_type":       { "type": "select", "label": "Unidad de medida",    "source": "modules_config.stock.unit_types" },
+        "unit_type":       { "type": "select", "label": "Unidad de medida",    "source": "modules_config.stock.unit_types", "default": "unidad" },
         "price":           { "type": "currency","label": "Precio unitario",     "placeholder": "0.00" },
         "price_bulk":      { "type": "currency","label": "Precio mayorista",    "placeholder": "0.00", "note": "Opcional" },
         "bulk_threshold":  { "type": "number", "label": "Cantidad mínima bulk","placeholder": "ej: 10" },

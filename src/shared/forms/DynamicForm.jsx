@@ -30,6 +30,21 @@ import {
 import PropTypes from 'prop-types'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useFields, usePreset } from '../../core/engine/PresetContext'
+
+/**
+ * Resuelve un path tipo "modules_config.stock.categories" contra el preset.
+ * Retorna el valor (generalmente un array de strings) o undefined.
+ */
+function resolveSourcePath(preset, sourcePath) {
+  if (!preset || !sourcePath) return undefined
+  const parts = sourcePath.split('.')
+  let obj = preset
+  for (const part of parts) {
+    if (obj == null) return undefined
+    obj = obj[part]
+  }
+  return obj
+}
 import { useAutoSave } from '../../core/engine/useAutoSave'
 import { db }          from '../../core/offline/db'
 import { useAuth }     from '../../core/auth/useAuth'
@@ -61,6 +76,7 @@ export default function DynamicForm({
   disabled  = false,
 }) {
   const { allFields, required, locked } = useFormSchema(entityType)
+  const { preset }           = usePreset()
   const { save, syncStatus } = useAutoSave()
   const { tenantId }         = useAuth()
   const recordRef            = useRef(initialValues)
@@ -169,6 +185,7 @@ export default function DynamicForm({
           tenantId={tenantId}
           onChange={(val) => handleChange(field.key, val)}
           onBlur={(val) => handleBlur(field.key, val)}
+          preset={preset}
         />
       ))}
 
@@ -239,6 +256,7 @@ export function DynamicField({
   tenantId,
   onChange,
   onBlur,
+  preset,
 }) {
   const inputBase = `
     w-full rounded-xl border px-4 py-3 text-base text-gray-900
@@ -344,7 +362,11 @@ export function DynamicField({
         </div>
       )
 
-    case 'select':
+    case 'select': {
+      // Resolver opciones: field.options directo, o field.source desde el preset
+      const resolvedOptions = field.options
+        ?? (field.source ? resolveSourcePath(preset, field.source) : null)
+        ?? []
       return (
         <div>
           {label}
@@ -355,7 +377,7 @@ export function DynamicField({
             className={inputBase}
           >
             <option value="">Seleccioná una opción</option>
-            {(field.options ?? []).map(opt => {
+            {resolvedOptions.map(opt => {
               const val = typeof opt === 'string' ? opt : opt.value
               const lbl = typeof opt === 'string' ? opt : opt.label
               return <option key={val} value={val}>{lbl}</option>
@@ -365,6 +387,7 @@ export function DynamicField({
           {hint}
         </div>
       )
+    }
 
     case 'entity_search':
       return (
@@ -481,8 +504,9 @@ DynamicField.propTypes = {
   error:    PropTypes.string,
   disabled: PropTypes.bool,
   tenantId: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
+  onChange:  PropTypes.func.isRequired,
   onBlur:   PropTypes.func,
+  preset:   PropTypes.object,
 }
 
 // ─────────────────────────────────────────────────────────────
