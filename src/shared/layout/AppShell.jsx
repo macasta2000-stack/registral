@@ -19,6 +19,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useAuth }   from '../../core/auth/useAuth'
 import { SyncStatusBar } from '../../core/offline/SyncStatusBar'
+import { ErrorBoundary } from '../ui/ErrorBoundary'
 import { GlobalSearch, useGlobalSearchShortcut } from '../ui/GlobalSearch'
 import { NotificationsPanel, useNotificationCount } from '../ui/NotificationsPanel'
 import Sidebar       from './Sidebar'
@@ -85,7 +86,9 @@ export default function AppShell() {
           /* Padding bottom en mobile para no solapar con SyncStatusBar */
           pb-16 md:pb-0
         ">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 
