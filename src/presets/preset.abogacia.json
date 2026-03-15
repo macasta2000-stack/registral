@@ -1,0 +1,193 @@
+{
+  "rubro": "abogacia",
+  "display_name": "Abogacía / Estudio Jurídico",
+  "icon": "⚖️",
+  "color_primary": "#1E40AF",
+  "color_accent": "#1E3A8A",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Expediente",
+    "clients": "Expedientes",
+    "transaction": "Honorario",
+    "transactions": "Honorarios",
+    "record": "Movimiento",
+    "product": "Servicio jurídico",
+    "products": "Servicios",
+    "entity": "Expediente",
+    "entities": "Expedientes",
+    "stock": "N/A",
+    "new_transaction": "Nuevo honorario",
+    "new_entity": "Nuevo expediente",
+    "new_product": "Nuevo servicio",
+    "balance": "Saldo de honorarios",
+    "schedule": "Vencimiento",
+    "schedules": "Vencimientos",
+    "dashboard_title": "Panel del estudio jurídico"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "expedientes",
+    "honorarios",
+    "agenda_vencimientos",
+    "partes",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "mesas",            "reason": "Exclusivo de Gastronomía" },
+    { "id": "comandas",         "reason": "Exclusivo de Gastronomía" },
+    { "id": "historia_clinica", "reason": "Exclusivo de Medicina" },
+    { "id": "turnos",           "reason": "Exclusivo de Medicina" },
+    { "id": "stock",            "reason": "No aplica para este rubro" },
+    { "id": "remitos",          "reason": "Exclusivo de Corralón" },
+    { "id": "agenda_entregas",  "reason": "Exclusivo de Corralón" },
+    { "id": "cuenta_corriente", "reason": "Exclusivo de Corralón" }
+  ],
+
+  "modules_config": {
+    "expedientes": {
+      "fueros": ["Civil", "Comercial", "Laboral", "Penal", "Familia", "Contencioso-Administrativo", "Constitucional", "Federal", "Otro"],
+      "estados": ["activo", "en_espera", "archivado", "ganado", "perdido", "desistido"],
+      "tipos": ["Demandante", "Demandado", "Ambas partes", "Consultoría", "Otro"]
+    },
+    "honorarios": {
+      "tipos": ["Consultoría", "Representación", "Redacción de contrato", "Mediación", "Pericia", "Adelanto de gastos", "Honorario regulado"],
+      "auto_number": true,
+      "sequence_key": "honorario"
+    }
+  },
+
+  "fields": {
+    "entity": {
+      "required": ["name", "caratula", "fuero"],
+      "optional": ["juzgado", "secretaria", "nro_expediente_judicial", "fecha_inicio", "fecha_vencimiento_poder", "monto_reclamado", "tipo", "estado", "contraparte_nombre", "contraparte_abogado", "notas"],
+      "locked": ["caratula", "fuero"],
+      "schema": {
+        "name":                      { "type": "text",     "label": "Nombre identificador",        "placeholder": "Nombre corto para identificar la causa" },
+        "caratula":                  { "type": "text",     "label": "Carátula",                    "placeholder": "ej: PÉREZ Juan c/ GARCÍA Ana s/ Cobro de pesos" },
+        "nro_expediente_judicial":   { "type": "text",     "label": "N° de expediente judicial",   "placeholder": "ej: 12345/2024" },
+        "fuero":                     { "type": "select",   "label": "Fuero",                       "source": "modules_config.expedientes.fueros" },
+        "juzgado":                   { "type": "text",     "label": "Juzgado",                     "placeholder": "ej: Juzgado Civil N° 5" },
+        "secretaria":                { "type": "text",     "label": "Secretaría",                  "placeholder": "ej: Secretaría B" },
+        "fecha_inicio":              { "type": "date",     "label": "Fecha de inicio",             "placeholder": "" },
+        "fecha_vencimiento_poder":   { "type": "date",     "label": "Vencimiento del poder",       "placeholder": "" },
+        "tipo":                      { "type": "select",   "label": "Rol del estudio",             "source": "modules_config.expedientes.tipos" },
+        "estado":                    { "type": "select",   "label": "Estado",                      "source": "modules_config.expedientes.estados" },
+        "monto_reclamado":           { "type": "currency", "label": "Monto reclamado",             "placeholder": "0.00" },
+        "contraparte_nombre":        { "type": "text",     "label": "Nombre contraparte",          "placeholder": "" },
+        "contraparte_abogado":       { "type": "text",     "label": "Abogado contraparte",         "placeholder": "" },
+        "notas":                     { "type": "textarea", "label": "Notas internas",              "placeholder": "" }
+      }
+    },
+    "transaction": {
+      "required": ["entity_id", "tipo_honorario", "total"],
+      "optional": ["descripcion", "fecha_devengamiento", "payment_method", "notes"],
+      "schema": {
+        "entity_id":          { "type": "entity_search", "label": "Expediente / Causa", "required": true },
+        "tipo_honorario":     { "type": "select",        "label": "Tipo de honorario",  "source": "modules_config.honorarios.tipos" },
+        "descripcion":        { "type": "textarea",      "label": "Descripción",        "placeholder": "Detalle del trabajo realizado" },
+        "fecha_devengamiento":{ "type": "date",          "label": "Fecha devengamiento","placeholder": "" },
+        "payment_method":     { "type": "select",        "label": "Forma de pago",      "options": ["Efectivo", "Transferencia", "Cheque", "Tarjeta crédito"] },
+        "notes":              { "type": "textarea",      "label": "Observaciones",      "placeholder": "" }
+      }
+    },
+    "schedule": {
+      "required": ["title", "scheduled_at", "entity_id"],
+      "optional": ["tipo_vencimiento", "descripcion", "alerta_dias_antes"],
+      "schema": {
+        "title":              { "type": "text",          "label": "Descripción del vencimiento",   "placeholder": "ej: Presentar escrito de inicio" },
+        "scheduled_at":       { "type": "datetime",      "label": "Fecha y hora",                  "placeholder": "" },
+        "entity_id":          { "type": "entity_search", "label": "Expediente",                    "required": true },
+        "tipo_vencimiento":   { "type": "select",        "label": "Tipo",                          "options": ["Plazo procesal", "Audiencia", "Presentación escrito", "Pericia", "Poder", "Otro"] },
+        "alerta_dias_antes":  { "type": "number",        "label": "Alertar con X días de antelación", "default": 3 },
+        "descripcion":        { "type": "textarea",      "label": "Notas",                         "placeholder": "" }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "honorario",
+    "steps": [
+      { "from": "pending", "to": "paid",      "label": "Registrar cobro", "action": "pay" },
+      { "from": "pending", "to": "cancelled", "label": "Anular",          "action": "cancel" }
+    ],
+    "cta_label": "Nuevo honorario",
+    "quick_actions": ["nuevo_honorario", "nuevo_vencimiento", "nuevo_expediente"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "vencimiento_proximo_3dias",
+      "priority": "critical",
+      "title": "Vencimiento en menos de 3 días",
+      "condition_query": "SELECT s.*, e.data->>'caratula' AS caratula FROM schedules s JOIN entities e ON e.id = s.entity_id WHERE s.tenant_id = $1 AND s.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '3 days' AND s.status IN ('pending','confirmed')",
+      "template": "🚨 Vencimiento: {title} — Expediente: {caratula} — {scheduled_at}",
+      "schedule": "daily_7am"
+    },
+    {
+      "id": "vencimiento_proximo_7dias",
+      "priority": "high",
+      "title": "Vencimientos próximos (7 días)",
+      "condition_query": "SELECT s.*, e.data->>'caratula' AS caratula FROM schedules s JOIN entities e ON e.id = s.entity_id WHERE s.tenant_id = $1 AND s.scheduled_at BETWEEN NOW() + INTERVAL '3 days' AND NOW() + INTERVAL '7 days' AND s.status IN ('pending','confirmed')",
+      "template": "⚠️ Vencimiento próximo: {title} — {caratula} — en {days_until} días",
+      "schedule": "daily_7am"
+    },
+    {
+      "id": "expediente_sin_movimiento",
+      "priority": "low",
+      "title": "Expediente activo sin movimiento en 15 días",
+      "condition_query": "SELECT e.* FROM entities e WHERE e.tenant_id = $1 AND e.data->>'estado' = 'activo' AND e.updated_at < NOW() - INTERVAL '15 days'",
+      "template": "📂 Expediente sin movimiento: {data->>'caratula'} — {days} días sin actividad",
+      "schedule": "daily_9am"
+    },
+    {
+      "id": "honorarios_sin_cobrar",
+      "priority": "medium",
+      "title": "Honorarios sin cobrar hace más de 30 días",
+      "condition_query": "SELECT t.* FROM transactions t WHERE t.tenant_id = $1 AND t.transaction_type = 'honorario' AND t.status = 'pending' AND t.created_at < NOW() - INTERVAL '30 days'",
+      "template": "💸 Honorario sin cobrar: {number} — ${total} — {days} días pendiente",
+      "schedule": "daily_9am"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "causas_activas_por_fuero",
+      "label": "¿Cuántas causas activas tengo por fuero?",
+      "icon": "⚖️",
+      "query_id": "abogacia_causas_by_fuero",
+      "display": "bar_chart"
+    },
+    {
+      "id": "honorarios_cobrados_mes",
+      "label": "¿Cuánto cobré de honorarios este mes?",
+      "icon": "💰",
+      "query_id": "abogacia_honorarios_mes",
+      "display": "stat_card"
+    },
+    {
+      "id": "vencimientos_proximos_30",
+      "label": "¿Qué vencimientos tengo en los próximos 30 días?",
+      "icon": "📅",
+      "query_id": "abogacia_vencimientos_30dias",
+      "display": "table"
+    }
+  ],
+
+  "dashboard_metrics": [
+    { "id": "causas_activas",           "label": "Causas activas",          "query_id": "abogacia_causas_activas",         "icon": "📂", "format": "number" },
+    { "id": "vencimientos_semana",      "label": "Vencimientos esta semana", "query_id": "abogacia_vencimientos_semana",    "icon": "📅", "format": "number", "color": "red" },
+    { "id": "honorarios_pendientes",    "label": "Honorarios a cobrar",      "query_id": "abogacia_honorarios_pendientes",  "icon": "💸", "format": "currency" },
+    { "id": "honorarios_mes",           "label": "Cobrado este mes",         "query_id": "abogacia_honorarios_cobrados_mes","icon": "💰", "format": "currency" }
+  ],
+
+  "plan_limits": {
+    "basico":  { "modules": ["dashboard", "expedientes", "honorarios", "agenda_vencimientos"], "max_entities": 50,  "max_transactions_month": 100, "max_users": 1 },
+    "pro":     { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": 5 },
+    "agencia": { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
+  },
+
+  "demo_data_file": "demo/abogacia.json"
+}

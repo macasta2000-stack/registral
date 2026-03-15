@@ -1,0 +1,249 @@
+{
+  "_meta": {
+    "rubro": "correlon",
+    "version": "1.0.0",
+    "note": "Datos demo estáticos. tenant_id DEMO se reemplaza al provisionar el tenant real.",
+    "prices_ref": "ARS Marzo 2026 (zona GBA)"
+  },
+
+  "products": [
+    {
+      "id": "demo-prod-001",
+      "tenant_id": "DEMO",
+      "code": "CEM-001",
+      "name": "Cemento Portland Normal x 50kg",
+      "description": "Bolsa de cemento Portland normal. Marca Loma Negra.",
+      "category": "Cemento y cal",
+      "unit_type": "bolsa",
+      "price": 9800,
+      "price_bulk": 9400,
+      "bulk_threshold": 20,
+      "cost": 7200,
+      "stock_current": 85,
+      "stock_minimum": 10,
+      "stock_location": "Depósito A - Estante 1",
+      "supplier": "Distribuidora Loma Negra",
+      "is_active": true
+    },
+    {
+      "id": "demo-prod-002",
+      "tenant_id": "DEMO",
+      "code": "LAD-001",
+      "name": "Ladrillo cerámico hueco 18x18x33",
+      "description": "Ladrillo hueco portante. Formato estándar IRAM.",
+      "category": "Ladrillos y bloques",
+      "unit_type": "unidad",
+      "price": 520,
+      "price_bulk": 490,
+      "bulk_threshold": 500,
+      "cost": 380,
+      "stock_current": 2400,
+      "stock_minimum": 500,
+      "stock_location": "Patio exterior",
+      "supplier": "Ladrillería San José",
+      "is_active": true
+    },
+    {
+      "id": "demo-prod-003",
+      "tenant_id": "DEMO",
+      "code": "HIE-001",
+      "name": "Hierro corrugado ø8mm x 12m",
+      "description": "Barra de hierro nervado para construcción. Certificado IRAM.",
+      "category": "Hierro y acero",
+      "unit_type": "unidad",
+      "price": 7500,
+      "price_bulk": 7100,
+      "bulk_threshold": 20,
+      "cost": 5800,
+      "stock_current": 180,
+      "stock_minimum": 25,
+      "stock_location": "Depósito B - Zona hierros",
+      "supplier": "Aceros del Norte SA",
+      "is_active": true
+    },
+    {
+      "id": "demo-prod-004",
+      "tenant_id": "DEMO",
+      "code": "ARE-001",
+      "name": "Arena gruesa lavada",
+      "description": "Arena gruesa para revoque y hormigón. Procedencia Zárate.",
+      "category": "Arena y gravilla",
+      "unit_type": "m3",
+      "price": 52000,
+      "price_bulk": 48000,
+      "bulk_threshold": 5,
+      "cost": 38000,
+      "stock_current": 12,
+      "stock_minimum": 3,
+      "stock_location": "Patio - Pilas exteriores",
+      "supplier": "Arenera Zárate",
+      "is_active": true
+    },
+    {
+      "id": "demo-prod-005",
+      "tenant_id": "DEMO",
+      "code": "CAL-001",
+      "name": "Cal hidráulica tipo II x 30kg",
+      "description": "Cal hidráulica para revoque y mampostería.",
+      "category": "Cemento y cal",
+      "unit_type": "bolsa",
+      "price": 3800,
+      "price_bulk": 3600,
+      "bulk_threshold": 15,
+      "cost": 2700,
+      "stock_current": 38,
+      "stock_minimum": 8,
+      "stock_location": "Depósito A - Estante 2",
+      "supplier": "Distribuidora Loma Negra",
+      "is_active": true
+    }
+  ],
+
+  "entities": [
+    {
+      "id": "demo-cli-001",
+      "tenant_id": "DEMO",
+      "entity_type": "cliente",
+      "code": "CLI-0001",
+      "name": "Juan Pérez",
+      "balance": 0,
+      "credit_limit": 150000,
+      "is_active": true,
+      "data": {
+        "cuit_dni": "20-28456789-0",
+        "telefono": "11-4567-8901",
+        "email": "juan.perez@gmail.com",
+        "direccion": "Av. San Martín 1234, Villa del Parque",
+        "tipo_cliente": "Minorista",
+        "notas": "Albañil independiente. Compra para obra propia."
+      }
+    },
+    {
+      "id": "demo-cli-002",
+      "tenant_id": "DEMO",
+      "entity_type": "cliente",
+      "code": "CLI-0002",
+      "name": "Constructora Del Valle SA",
+      "balance": 185000,
+      "credit_limit": 1000000,
+      "is_active": true,
+      "data": {
+        "cuit_dni": "30-71234567-9",
+        "telefono": "11-3456-7890",
+        "email": "compras@delvallesa.com.ar",
+        "direccion": "Ruta 8 km 42, Palermo",
+        "tipo_cliente": "Constructor",
+        "notas": "Empresa constructora. Compras mensuales importantes. CC habitual."
+      }
+    },
+    {
+      "id": "demo-cli-003",
+      "tenant_id": "DEMO",
+      "entity_type": "cliente",
+      "code": "CLI-0003",
+      "name": "Mario García",
+      "balance": 0,
+      "credit_limit": 80000,
+      "is_active": true,
+      "data": {
+        "cuit_dni": "20-15678901-5",
+        "telefono": "11-6789-0123",
+        "email": "",
+        "direccion": "Lebensohn 456, Floresta",
+        "tipo_cliente": "Mayorista",
+        "notas": "Tiene su propio depósito. Compra hierro en cantidad."
+      }
+    }
+  ],
+
+  "transactions": [
+    {
+      "id": "demo-rem-001",
+      "tenant_id": "DEMO",
+      "transaction_type": "remito",
+      "number": "REM-0001",
+      "entity_id": "demo-cli-001",
+      "status": "delivered",
+      "subtotal": 178600,
+      "discount": 0,
+      "tax": 0,
+      "total": 178600,
+      "paid_amount": 178600,
+      "payment_method": "Efectivo",
+      "notes": "Entrega en obra de Av. San Martín. Sin flete.",
+      "data": {
+        "con_flete": false,
+        "direccion_entrega": "",
+        "chofer": ""
+      }
+    },
+    {
+      "id": "demo-rem-002",
+      "tenant_id": "DEMO",
+      "transaction_type": "remito",
+      "number": "REM-0002",
+      "entity_id": "demo-cli-003",
+      "status": "delivered",
+      "subtotal": 375000,
+      "discount": 15000,
+      "tax": 0,
+      "total": 360000,
+      "paid_amount": 0,
+      "payment_method": "Cuenta corriente",
+      "notes": "Descuento por volumen acordado. Saldo a 15 días.",
+      "data": {
+        "con_flete": true,
+        "direccion_entrega": "Lebensohn 456, Floresta",
+        "chofer": "Roberto Suárez"
+      }
+    }
+  ],
+
+  "transaction_items": [
+    {
+      "id": "demo-item-001",
+      "tenant_id": "DEMO",
+      "transaction_id": "demo-rem-001",
+      "product_id": "demo-prod-001",
+      "description": "Cemento Portland Normal x 50kg",
+      "unit_type": "bolsa",
+      "quantity": 10,
+      "unit_price": 9800,
+      "discount_pct": 0,
+      "subtotal": 98000
+    },
+    {
+      "id": "demo-item-002",
+      "tenant_id": "DEMO",
+      "transaction_id": "demo-rem-001",
+      "product_id": "demo-prod-004",
+      "description": "Arena gruesa lavada",
+      "unit_type": "m3",
+      "quantity": 1.5,
+      "unit_price": 52000,
+      "discount_pct": 0,
+      "subtotal": 78000
+    },
+    {
+      "id": "demo-item-003",
+      "tenant_id": "DEMO",
+      "transaction_id": "demo-rem-002",
+      "product_id": "demo-prod-003",
+      "description": "Hierro corrugado ø8mm x 12m",
+      "unit_type": "unidad",
+      "quantity": 50,
+      "unit_price": 7500,
+      "discount_pct": 4,
+      "subtotal": 360000
+    }
+  ],
+
+  "dashboard_summary": {
+    "ventas_hoy": 178600,
+    "remitos_pendientes": 1,
+    "clientes_con_deuda": 1,
+    "entregas_hoy": 2,
+    "stock_bajo_minimo": 0,
+    "ventas_semana": 538600
+  }
+}

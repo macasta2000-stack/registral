@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "rubro": "abogacia",
+    "version": "1.0.0",
+    "note": "Datos demo stub. Se completarán en sesiones futuras."
+  },
+  "products": [],
+  "entities": [],
+  "transactions": [],
+  "dashboard_summary": {
+    "ventas_hoy": 0,
+    "remitos_pendientes": 0,
+    "clientes_con_deuda": 0,
+    "entregas_hoy": 0,
+    "stock_bajo_minimo": 0
+  }
+}

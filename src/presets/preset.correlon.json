@@ -1,0 +1,380 @@
+{
+  "rubro": "correlon",
+  "display_name": "Corralón / Materiales de Construcción",
+  "icon": "🧱",
+  "color_primary": "#D97706",
+  "color_accent": "#92400E",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Cliente",
+    "clients": "Clientes",
+    "transaction": "Remito",
+    "transactions": "Remitos",
+    "record": "Movimiento",
+    "product": "Artículo",
+    "products": "Artículos",
+    "entity": "Cliente habitual",
+    "entities": "Clientes habituales",
+    "stock": "Stock",
+    "new_transaction": "Nuevo remito",
+    "new_entity": "Nuevo cliente",
+    "new_product": "Nuevo artículo",
+    "balance": "Saldo en cuenta corriente",
+    "schedule": "Entrega",
+    "schedules": "Entregas",
+    "dashboard_title": "Panel del corralón"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "stock",
+    "remitos",
+    "cuenta_corriente",
+    "agenda_entregas",
+    "clientes",
+    "caja",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "mesas",           "reason": "Exclusivo de Gastronomía" },
+    { "id": "comandas",        "reason": "Exclusivo de Gastronomía" },
+    { "id": "historia_clinica","reason": "Exclusivo de Medicina" },
+    { "id": "turnos",          "reason": "Exclusivo de Medicina" },
+    { "id": "expedientes",     "reason": "Exclusivo de Abogacía" },
+    { "id": "honorarios",      "reason": "Exclusivo de Abogacía" },
+    { "id": "presupuestos",    "reason": "Exclusivo de Servicios Generales" }
+  ],
+
+  "modules_config": {
+    "dashboard": {
+      "widgets": [
+        "ventas_hoy",
+        "remitos_pendientes",
+        "clientes_con_deuda",
+        "entregas_hoy",
+        "stock_bajo_minimo"
+      ]
+    },
+    "stock": {
+      "unit_types": ["unidad", "kg", "m3", "litro", "metro", "bolsa", "rollo", "placa", "tonelada"],
+      "default_unit": "unidad",
+      "show_bulk_pricing": true,
+      "show_cost": true,
+      "categories": [
+        "Arena y gravilla",
+        "Cemento y cal",
+        "Hierro y acero",
+        "Ladrillos y bloques",
+        "Madera",
+        "Pinturas",
+        "Sanitarios y plomería",
+        "Electricidad",
+        "Herramientas",
+        "Revestimientos",
+        "Techos y cubiertas",
+        "Otros"
+      ]
+    },
+    "remitos": {
+      "requires_client": true,
+      "auto_number": true,
+      "sequence_key": "remito",
+      "number_prefix": "REM",
+      "affects_stock": true,
+      "affects_cuentacorriente": true,
+      "fields_extra": ["con_flete", "direccion_entrega", "chofer", "remito_externo_nro"],
+      "status_flow": ["draft", "confirmed", "delivered", "paid"]
+    },
+    "cuenta_corriente": {
+      "requires_client": true,
+      "show_credit_limit": true,
+      "overdue_days_threshold": 30,
+      "currency": "ARS"
+    },
+    "agenda_entregas": {
+      "view_modes": ["day", "week", "list"],
+      "default_view": "day",
+      "fields": ["direccion_entrega", "chofer", "vehiculo", "contacto_receptor", "observaciones"]
+    },
+    "clientes": {
+      "required_fields": ["name", "telefono"],
+      "show_credit_limit": true,
+      "show_balance": true
+    }
+  },
+
+  "fields": {
+    "product": {
+      "required": ["name", "unit_type", "price", "stock_minimum"],
+      "optional": ["code", "description", "category", "price_bulk", "bulk_threshold", "cost", "stock_location", "supplier"],
+      "locked": [],
+      "schema": {
+        "code":            { "type": "text",   "label": "Código",              "placeholder": "ej: CEM-001" },
+        "name":            { "type": "text",   "label": "Artículo",            "placeholder": "ej: Cemento Portland x 50kg" },
+        "description":     { "type": "textarea","label": "Descripción",         "placeholder": "" },
+        "category":        { "type": "select", "label": "Categoría",           "source": "modules_config.stock.categories" },
+        "unit_type":       { "type": "select", "label": "Unidad de medida",    "source": "modules_config.stock.unit_types" },
+        "price":           { "type": "currency","label": "Precio unitario",     "placeholder": "0.00" },
+        "price_bulk":      { "type": "currency","label": "Precio mayorista",    "placeholder": "0.00", "note": "Opcional" },
+        "bulk_threshold":  { "type": "number", "label": "Cantidad mínima bulk","placeholder": "ej: 10" },
+        "cost":            { "type": "currency","label": "Costo de compra",     "placeholder": "0.00", "visibility": "owner_admin" },
+        "stock_current":   { "type": "number", "label": "Stock actual",        "placeholder": "0" },
+        "stock_minimum":   { "type": "number", "label": "Stock mínimo",        "placeholder": "0" },
+        "stock_location":  { "type": "text",   "label": "Ubicación en depósito","placeholder": "ej: Pasillo 3, Estante B" },
+        "supplier":        { "type": "text",   "label": "Proveedor",           "placeholder": "ej: Cementos del Norte SA" }
+      }
+    },
+    "entity": {
+      "required": ["name"],
+      "optional": ["cuit_dni", "direccion", "telefono", "email", "credit_limit", "notas", "tipo_cliente"],
+      "locked": [],
+      "schema": {
+        "name":         { "type": "text",     "label": "Nombre / Razón social", "placeholder": "ej: Juan Pérez o Constructora XYZ SA" },
+        "cuit_dni":     { "type": "text",     "label": "CUIT / DNI",            "placeholder": "ej: 20-12345678-9" },
+        "direccion":    { "type": "text",     "label": "Dirección",             "placeholder": "ej: Av. San Martín 1234, Villa del Parque" },
+        "telefono":     { "type": "tel",      "label": "Teléfono",              "placeholder": "ej: 11-4567-8901" },
+        "email":        { "type": "email",    "label": "Email",                 "placeholder": "ej: juan@example.com" },
+        "tipo_cliente": { "type": "select",   "label": "Tipo de cliente",       "options": ["Minorista", "Mayorista", "Constructor", "Empresa"] },
+        "credit_limit": { "type": "currency", "label": "Límite de crédito",     "placeholder": "0.00", "note": "0 = sin límite" },
+        "notas":        { "type": "textarea", "label": "Notas internas",        "placeholder": "" }
+      }
+    },
+    "transaction": {
+      "required": ["entity_id", "items"],
+      "optional": ["notes", "payment_method", "con_flete", "direccion_entrega", "chofer", "remito_externo_nro"],
+      "locked": ["number", "status", "total"],
+      "schema": {
+        "entity_id":          { "type": "entity_search", "label": "Cliente",                   "required": true },
+        "con_flete":          { "type": "boolean",  "label": "Incluye flete",              "default": false },
+        "direccion_entrega":  { "type": "text",     "label": "Dirección de entrega",       "placeholder": "Dirección donde se entrega el material" },
+        "chofer":             { "type": "text",     "label": "Chofer asignado",            "placeholder": "Nombre del chofer" },
+        "remito_externo_nro": { "type": "text",     "label": "Remito externo N°",          "placeholder": "Si el cliente emite su propio remito" },
+        "payment_method":     { "type": "select",   "label": "Forma de pago",              "options": ["Efectivo", "Transferencia", "Cheque", "Tarjeta débito", "Tarjeta crédito", "Cuenta corriente"] },
+        "notes":              { "type": "textarea", "label": "Observaciones",              "placeholder": "" }
+      }
+    },
+    "schedule": {
+      "required": ["title", "scheduled_at"],
+      "optional": ["entity_id", "transaction_id", "direccion_entrega", "chofer", "vehiculo", "contacto_receptor", "description"],
+      "schema": {
+        "title":              { "type": "text",     "label": "Descripción de la entrega" },
+        "scheduled_at":       { "type": "datetime", "label": "Fecha y hora de entrega" },
+        "entity_id":          { "type": "entity_search", "label": "Cliente" },
+        "transaction_id":     { "type": "transaction_search", "label": "Remito asociado" },
+        "direccion_entrega":  { "type": "text",     "label": "Dirección de entrega" },
+        "chofer":             { "type": "text",     "label": "Chofer" },
+        "vehiculo":           { "type": "text",     "label": "Vehículo / Camión" },
+        "contacto_receptor":  { "type": "text",     "label": "Contacto en destino" },
+        "description":        { "type": "textarea", "label": "Observaciones" }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "remito",
+    "steps": [
+      { "from": "draft",     "to": "confirmed", "label": "Confirmar remito",  "action": "confirm",  "affects_stock": true },
+      { "from": "confirmed", "to": "delivered", "label": "Marcar entregado",  "action": "deliver",  "creates_schedule": false },
+      { "from": "delivered", "to": "paid",       "label": "Registrar cobro",   "action": "pay",      "affects_ar": true },
+      { "from": "confirmed", "to": "cancelled",  "label": "Anular remito",     "action": "cancel",   "reverses_stock": true }
+    ],
+    "cta_label": "Nuevo remito",
+    "quick_actions": ["nuevo_remito", "registrar_pago", "agregar_articulo"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "stock_bajo_minimo",
+      "priority": "high",
+      "title": "Stock bajo mínimo",
+      "condition_query": "SELECT * FROM v_products_low_stock WHERE tenant_id = $1",
+      "template": "⚠️ {name} ({unit_type}): stock actual {stock_current}, mínimo {stock_minimum}",
+      "group_by": "category",
+      "max_per_run": 20,
+      "schedule": "every_hour"
+    },
+    {
+      "id": "clientes_saldo_vencido",
+      "priority": "high",
+      "title": "Clientes con saldo vencido",
+      "condition_query": "SELECT * FROM v_entities_overdue_balance WHERE tenant_id = $1 AND days_overdue > 30",
+      "template": "💸 {name}: saldo vencido ${balance} hace {days_overdue} días",
+      "schedule": "daily_9am"
+    },
+    {
+      "id": "entregas_del_dia",
+      "priority": "medium",
+      "title": "Entregas programadas para hoy",
+      "condition_query": "SELECT * FROM v_today_schedules WHERE tenant_id = $1 AND schedule_type = 'entrega'",
+      "template": "🚛 Entrega: {title} — {data->>'direccion_entrega'} ({data->>'chofer'})",
+      "schedule": "daily_7am",
+      "expires_at": "end_of_day"
+    },
+    {
+      "id": "remitos_sin_cobrar",
+      "priority": "medium",
+      "title": "Remitos sin cobrar hace más de 30 días",
+      "condition_query": "SELECT * FROM transactions WHERE tenant_id = $1 AND transaction_type = 'remito' AND status = 'delivered' AND created_at < NOW() - INTERVAL '30 days'",
+      "template": "📋 Remito {number} de {entity_name} sin cobrar desde hace {days} días — Total: ${total}",
+      "schedule": "daily_9am"
+    },
+    {
+      "id": "cuentas_sobre_limite",
+      "priority": "critical",
+      "title": "Cliente supera límite de crédito",
+      "condition_query": "SELECT e.* FROM entities e WHERE e.tenant_id = $1 AND e.credit_limit > 0 AND e.balance > e.credit_limit",
+      "template": "🚨 {name}: saldo ${balance} supera límite de crédito ${credit_limit}",
+      "schedule": "every_hour"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "articulo_mas_vendido_semana",
+      "label": "¿Qué artículo vendí más esta semana?",
+      "icon": "📦",
+      "query_id": "correlon_top_articulos_semana",
+      "display": "bar_chart",
+      "params": { "period": "week" }
+    },
+    {
+      "id": "clientes_mayor_deuda",
+      "label": "¿Qué clientes tienen más deuda?",
+      "icon": "💸",
+      "query_id": "correlon_top_deudores",
+      "display": "table"
+    },
+    {
+      "id": "margen_por_categoria",
+      "label": "¿Cuál es el margen por categoría de material?",
+      "icon": "📊",
+      "query_id": "correlon_margen_categoria",
+      "display": "bar_chart",
+      "requires_plan": "pro"
+    },
+    {
+      "id": "ventas_semana_vs_anterior",
+      "label": "¿Cómo fueron las ventas esta semana vs. la anterior?",
+      "icon": "📈",
+      "query_id": "correlon_ventas_comparativo_semanal",
+      "display": "line_chart"
+    },
+    {
+      "id": "articulos_bajo_stock",
+      "label": "¿Qué artículos están por agotarse?",
+      "icon": "⚠️",
+      "query_id": "correlon_stock_critico",
+      "display": "table"
+    },
+    {
+      "id": "remitos_mes",
+      "label": "¿Cuántos remitos emití este mes?",
+      "icon": "📋",
+      "query_id": "correlon_remitos_por_mes",
+      "display": "stat_card"
+    }
+  ],
+
+  "dashboard_metrics": [
+    {
+      "id": "ventas_hoy",
+      "label": "Ventas hoy",
+      "query_id": "correlon_ventas_hoy",
+      "icon": "💰",
+      "color": "green",
+      "format": "currency"
+    },
+    {
+      "id": "remitos_pendientes",
+      "label": "Remitos pendientes",
+      "query_id": "correlon_remitos_pendientes_count",
+      "icon": "📋",
+      "color": "yellow",
+      "format": "number",
+      "link_to": "remitos?status=confirmed"
+    },
+    {
+      "id": "clientes_con_deuda",
+      "label": "Clientes con deuda",
+      "query_id": "correlon_clientes_con_deuda_count",
+      "icon": "👥",
+      "color": "red",
+      "format": "number",
+      "link_to": "cuenta_corriente?filter=con_deuda"
+    },
+    {
+      "id": "entregas_hoy",
+      "label": "Entregas de hoy",
+      "query_id": "correlon_entregas_hoy_count",
+      "icon": "🚛",
+      "color": "blue",
+      "format": "number",
+      "link_to": "agenda_entregas?view=day"
+    },
+    {
+      "id": "stock_bajo_minimo",
+      "label": "Artículos bajo mínimo",
+      "query_id": "correlon_stock_bajo_count",
+      "icon": "⚠️",
+      "color": "orange",
+      "format": "number",
+      "link_to": "stock?filter=bajo_minimo"
+    }
+  ],
+
+  "plan_limits": {
+    "basico": {
+      "modules": ["dashboard", "stock", "remitos", "clientes", "caja"],
+      "max_entities": 100,
+      "max_products": 200,
+      "max_transactions_month": 200,
+      "max_users": 2
+    },
+    "pro": {
+      "modules": ["dashboard", "stock", "remitos", "cuenta_corriente", "agenda_entregas", "clientes", "caja", "reportes"],
+      "max_entities": -1,
+      "max_products": -1,
+      "max_transactions_month": -1,
+      "max_users": 5
+    },
+    "agencia": {
+      "modules": ["*"],
+      "max_entities": -1,
+      "max_products": -1,
+      "max_transactions_month": -1,
+      "max_users": -1,
+      "multi_branch": true
+    }
+  },
+
+  "demo_data_file": "demo/correlon.json",
+
+  "onboarding_steps": [
+    {
+      "step": 1,
+      "title": "¡Bienvenido a tu corralón digital!",
+      "description": "Primero, cargá tus artículos principales.",
+      "action": "go_to_stock",
+      "cta": "Cargar primer artículo",
+      "module": "stock"
+    },
+    {
+      "step": 2,
+      "title": "Agregá tus clientes habituales",
+      "description": "Podés cargarlos ahora o en el momento de hacer el primer remito.",
+      "action": "go_to_clientes",
+      "cta": "Agregar cliente",
+      "module": "clientes"
+    },
+    {
+      "step": 3,
+      "title": "Hacé tu primer remito",
+      "description": "Seleccioná un cliente, los artículos y listo.",
+      "action": "new_transaction",
+      "cta": "Nuevo remito",
+      "module": "remitos"
+    }
+  ]
+}

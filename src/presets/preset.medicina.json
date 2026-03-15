@@ -1,0 +1,177 @@
+{
+  "rubro": "medicina",
+  "display_name": "Medicina / Salud",
+  "icon": "🏥",
+  "color_primary": "#0D9488",
+  "color_accent": "#0F766E",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Paciente",
+    "clients": "Pacientes",
+    "transaction": "Consulta",
+    "transactions": "Consultas",
+    "record": "Registro",
+    "product": "Prestación",
+    "products": "Prestaciones",
+    "entity": "Paciente",
+    "entities": "Pacientes",
+    "stock": "Insumos",
+    "new_transaction": "Nueva consulta",
+    "new_entity": "Nuevo paciente",
+    "new_product": "Nueva prestación",
+    "balance": "Saldo",
+    "schedule": "Turno",
+    "schedules": "Turnos",
+    "dashboard_title": "Panel de salud"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "pacientes",
+    "historia_clinica",
+    "turnos",
+    "consultas",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "mesas",           "reason": "Exclusivo de Gastronomía" },
+    { "id": "comandas",        "reason": "Exclusivo de Gastronomía" },
+    { "id": "expedientes",     "reason": "Exclusivo de Abogacía" },
+    { "id": "honorarios",      "reason": "Exclusivo de Abogacía" },
+    { "id": "remitos",         "reason": "Exclusivo de Corralón" },
+    { "id": "agenda_entregas", "reason": "Exclusivo de Corralón" },
+    { "id": "cuenta_corriente","reason": "Exclusivo de Corralón" }
+  ],
+
+  "modules_config": {
+    "especialidades": ["Clínica General", "Pediatría", "Cardiología", "Dermatología", "Ginecología", "Traumatología", "Psiquiatría", "Neurología", "Nutrición", "Odontología", "Otro"],
+    "obras_sociales": ["OSDE", "Swiss Medical", "Galeno", "IOMA", "PAMI", "Medicus", "Accord Salud", "Sancor Salud", "Particular", "Otra"],
+    "tipos_consulta": ["Primera vez", "Control", "Urgencia", "Seguimiento", "Resultado de análisis", "Teleconsulta"],
+    "turnos": {
+      "duration_default_minutes": 30,
+      "view_modes": ["day", "week"],
+      "default_view": "day",
+      "auto_number": true
+    }
+  },
+
+  "fields": {
+    "entity": {
+      "required": ["name", "fecha_nacimiento"],
+      "optional": ["dni", "telefono", "email", "obra_social", "nro_afiliado", "alergias", "medicacion_actual", "antecedentes", "contacto_emergencia", "notas"],
+      "locked": [],
+      "schema": {
+        "name":                 { "type": "text",   "label": "Nombre completo",           "placeholder": "ej: María García" },
+        "dni":                  { "type": "text",   "label": "DNI",                       "placeholder": "ej: 30456789" },
+        "fecha_nacimiento":     { "type": "date",   "label": "Fecha de nacimiento",       "placeholder": "" },
+        "telefono":             { "type": "tel",    "label": "Teléfono",                  "placeholder": "ej: 11-4567-8901" },
+        "email":                { "type": "email",  "label": "Email",                     "placeholder": "" },
+        "obra_social":          { "type": "select", "label": "Obra social / Prepaga",     "source": "modules_config.obras_sociales" },
+        "nro_afiliado":         { "type": "text",   "label": "N° de afiliado",            "placeholder": "" },
+        "alergias":             { "type": "textarea","label": "Alergias conocidas",        "placeholder": "" },
+        "medicacion_actual":    { "type": "textarea","label": "Medicación actual",         "placeholder": "" },
+        "antecedentes":         { "type": "textarea","label": "Antecedentes patológicos",  "placeholder": "" },
+        "contacto_emergencia":  { "type": "text",   "label": "Contacto de emergencia",    "placeholder": "Nombre y teléfono" },
+        "notas":                { "type": "textarea","label": "Notas internas",            "placeholder": "" }
+      }
+    },
+    "transaction": {
+      "required": ["entity_id", "tipo_consulta"],
+      "optional": ["motivo_consulta", "diagnostico", "tratamiento", "prescripciones", "proxima_cita", "payment_method"],
+      "schema": {
+        "entity_id":       { "type": "entity_search", "label": "Paciente",            "required": true },
+        "tipo_consulta":   { "type": "select",        "label": "Tipo de consulta",    "source": "modules_config.tipos_consulta" },
+        "motivo_consulta": { "type": "textarea",      "label": "Motivo de consulta",  "placeholder": "" },
+        "diagnostico":     { "type": "textarea",      "label": "Diagnóstico",         "placeholder": "" },
+        "tratamiento":     { "type": "textarea",      "label": "Tratamiento indicado","placeholder": "" },
+        "prescripciones":  { "type": "textarea",      "label": "Prescripciones",      "placeholder": "" },
+        "proxima_cita":    { "type": "date",          "label": "Próxima cita",        "placeholder": "" },
+        "payment_method":  { "type": "select",        "label": "Forma de pago",       "options": ["Efectivo", "Transferencia", "Obra social", "Particular"] }
+      }
+    },
+    "schedule": {
+      "required": ["entity_id", "scheduled_at"],
+      "optional": ["tipo_consulta", "profesional", "sala", "descripcion"],
+      "schema": {
+        "entity_id":     { "type": "entity_search", "label": "Paciente",             "required": true },
+        "scheduled_at":  { "type": "datetime",      "label": "Fecha y hora del turno","required": true },
+        "tipo_consulta": { "type": "select",        "label": "Tipo de consulta",     "source": "modules_config.tipos_consulta" },
+        "profesional":   { "type": "text",          "label": "Profesional",          "placeholder": "Nombre del médico/a" },
+        "sala":          { "type": "text",          "label": "Consultorio/Sala",     "placeholder": "ej: Consultorio 2" },
+        "descripcion":   { "type": "textarea",      "label": "Observaciones",        "placeholder": "" }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "consulta",
+    "steps": [
+      { "from": "pending",   "to": "confirmed", "label": "Confirmar turno",  "action": "confirm" },
+      { "from": "confirmed", "to": "paid",      "label": "Registrar cobro",  "action": "pay" },
+      { "from": "confirmed", "to": "cancelled", "label": "Cancelar turno",   "action": "cancel" }
+    ],
+    "cta_label": "Nuevo turno",
+    "quick_actions": ["nuevo_turno", "nueva_consulta", "buscar_paciente"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "turnos_del_dia",
+      "priority": "medium",
+      "title": "Turnos del día",
+      "condition_query": "SELECT * FROM v_today_schedules WHERE tenant_id = $1 AND schedule_type = 'turno'",
+      "template": "📅 Turno: {entity_name} — {scheduled_at} — {data->>'profesional'}",
+      "schedule": "daily_7am",
+      "expires_at": "end_of_day"
+    },
+    {
+      "id": "turnos_sin_confirmar",
+      "priority": "low",
+      "title": "Turnos de mañana sin confirmar",
+      "condition_query": "SELECT s.*, e.name AS entity_name FROM schedules s JOIN entities e ON e.id = s.entity_id WHERE s.tenant_id = $1 AND s.scheduled_at::DATE = CURRENT_DATE + 1 AND s.status = 'pending'",
+      "template": "⚠️ Turno sin confirmar: {entity_name} — mañana {scheduled_at}",
+      "schedule": "daily_17pm"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "consultas_mes",
+      "label": "¿Cuántas consultas tuve este mes?",
+      "icon": "📊",
+      "query_id": "medicina_consultas_mes",
+      "display": "stat_card"
+    },
+    {
+      "id": "pacientes_mas_frecuentes",
+      "label": "¿Quiénes son mis pacientes más frecuentes?",
+      "icon": "👥",
+      "query_id": "medicina_pacientes_frecuentes",
+      "display": "table"
+    },
+    {
+      "id": "ocupacion_agenda",
+      "label": "¿Cuál es la ocupación de mi agenda?",
+      "icon": "📅",
+      "query_id": "medicina_ocupacion_agenda",
+      "display": "bar_chart"
+    }
+  ],
+
+  "dashboard_metrics": [
+    { "id": "turnos_hoy",        "label": "Turnos de hoy",           "query_id": "medicina_turnos_hoy",          "icon": "📅", "format": "number" },
+    { "id": "pacientes_activos", "label": "Pacientes activos",        "query_id": "medicina_pacientes_activos",   "icon": "👥", "format": "number" },
+    { "id": "consultas_mes",     "label": "Consultas este mes",       "query_id": "medicina_consultas_mes",       "icon": "🩺", "format": "number" },
+    { "id": "cobrado_mes",       "label": "Facturado este mes",       "query_id": "medicina_cobrado_mes",         "icon": "💰", "format": "currency" }
+  ],
+
+  "plan_limits": {
+    "basico":  { "modules": ["dashboard", "pacientes", "turnos", "consultas"], "max_entities": 200, "max_transactions_month": 200, "max_users": 2 },
+    "pro":     { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": 10 },
+    "agencia": { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
+  },
+
+  "demo_data_file": "demo/medicina.json"
+}

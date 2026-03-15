@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls C:/Users/macas/Documents/registral/.env*)",
+      "Bash(npx vite:*)",
+      "Bash(rm -rf node_modules package-lock.json)",
+      "Bash(npm install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -e \":*)"
+    ]
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "rubro": "gastronomia",
+  "display_name": "Gastronomía / Restaurante",
+  "icon": "🍽️",
+  "color_primary": "#DC2626",
+  "color_accent": "#7F1D1D",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Mesa",
+    "clients": "Mesas",
+    "transaction": "Comanda",
+    "transactions": "Comandas",
+    "record": "Movimiento",
+    "product": "Plato",
+    "products": "Menú",
+    "entity": "Mesa",
+    "entities": "Mesas",
+    "stock": "Inventario",
+    "new_transaction": "Nueva comanda",
+    "new_entity": "Nueva mesa",
+    "new_product": "Nuevo plato",
+    "balance": "Cuenta",
+    "schedule": "Reserva",
+    "schedules": "Reservas",
+    "dashboard_title": "Panel del restaurante"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "mesas",
+    "comandas",
+    "menu",
+    "caja",
+    "reservas",
+    "stock",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "expedientes",       "reason": "Exclusivo de Abogacía" },
+    { "id": "honorarios",        "reason": "Exclusivo de Abogacía" },
+    { "id": "historia_clinica",  "reason": "Exclusivo de Medicina" },
+    { "id": "turnos",            "reason": "Exclusivo de Medicina" },
+    { "id": "remitos",           "reason": "Exclusivo de Corralón" },
+    { "id": "cuenta_corriente",  "reason": "Exclusivo de Corralón" },
+    { "id": "agenda_entregas",   "reason": "Exclusivo de Corralón" },
+    { "id": "presupuestos",      "reason": "Exclusivo de Servicios Generales" }
+  ],
+
+  "modules_config": {
+    "mesas": {
+      "sectores": ["Salón", "Terraza", "Barra", "VIP", "Privado"],
+      "estados": ["libre", "ocupada", "reservada", "para_limpiar"],
+      "capacidades": [1, 2, 4, 6, 8, 10, 12]
+    },
+    "menu": {
+      "categories": [
+        "Entradas",
+        "Sopas",
+        "Pastas",
+        "Carnes",
+        "Pescados",
+        "Vegetariano",
+        "Postres",
+        "Bebidas sin alcohol",
+        "Vinos",
+        "Cervezas",
+        "Aguas",
+        "Cafetería"
+      ],
+      "unit_types": ["porción", "unidad", "vaso", "copa", "botella", "lata", "jarra"]
+    },
+    "comandas": {
+      "kitchen_display": true,
+      "status_flow": ["open", "sent_kitchen", "ready", "served", "closed", "paid"],
+      "auto_number": true,
+      "sequence_key": "comanda"
+    }
+  },
+
+  "fields": {
+    "product": {
+      "required": ["name", "price", "category"],
+      "optional": ["code", "description", "unit_type", "cost", "alergenos", "disponible"],
+      "schema": {
+        "code":          { "type": "text",     "label": "Código",           "placeholder": "ej: P-001" },
+        "name":          { "type": "text",     "label": "Nombre del plato", "placeholder": "ej: Milanesa napolitana" },
+        "description":   { "type": "textarea", "label": "Descripción",      "placeholder": "Ingredientes, preparación..." },
+        "category":      { "type": "select",   "label": "Categoría",        "source": "modules_config.menu.categories" },
+        "unit_type":     { "type": "select",   "label": "Tipo de unidad",   "source": "modules_config.menu.unit_types" },
+        "price":         { "type": "currency", "label": "Precio de venta",  "placeholder": "0.00" },
+        "cost":          { "type": "currency", "label": "Costo",            "visibility": "owner_admin" },
+        "alergenos":     { "type": "text",     "label": "Alérgenos",        "placeholder": "ej: gluten, lácteos" },
+        "disponible":    { "type": "boolean",  "label": "Disponible hoy",   "default": true }
+      }
+    },
+    "entity": {
+      "required": ["name", "sector"],
+      "optional": ["capacidad", "descripcion"],
+      "schema": {
+        "name":       { "type": "text",   "label": "Número/Nombre de mesa", "placeholder": "ej: Mesa 5 o Mesa VIP" },
+        "sector":     { "type": "select", "label": "Sector",                "source": "modules_config.mesas.sectores" },
+        "capacidad":  { "type": "select", "label": "Capacidad (personas)",  "source": "modules_config.mesas.capacidades" },
+        "descripcion":{ "type": "text",   "label": "Descripción",           "placeholder": "ej: Ventana exterior" }
+      }
+    },
+    "transaction": {
+      "required": ["entity_id"],
+      "optional": ["mozo", "comensales", "notes"],
+      "schema": {
+        "entity_id":   { "type": "entity_search", "label": "Mesa",         "required": true },
+        "mozo":        { "type": "text",          "label": "Mozo/Moza",    "placeholder": "Nombre" },
+        "comensales":  { "type": "number",        "label": "Comensales",   "placeholder": "0" },
+        "notes":       { "type": "textarea",      "label": "Observaciones","placeholder": "Alergias, pedidos especiales..." }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "comanda",
+    "steps": [
+      { "from": "open",         "to": "sent_kitchen", "label": "Enviar a cocina",  "action": "send_kitchen" },
+      { "from": "sent_kitchen", "to": "ready",        "label": "Listo para servir","action": "mark_ready" },
+      { "from": "ready",        "to": "served",       "label": "Servido",          "action": "mark_served" },
+      { "from": "served",       "to": "paid",         "label": "Cobrar cuenta",    "action": "pay" },
+      { "from": "open",         "to": "cancelled",    "label": "Cancelar comanda", "action": "cancel" }
+    ],
+    "cta_label": "Nueva comanda",
+    "quick_actions": ["nueva_comanda", "ver_mesas", "cerrar_caja"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "mesa_ocupada_mucho_tiempo",
+      "priority": "low",
+      "title": "Mesa con comanda abierta hace más de 2 horas",
+      "condition_query": "SELECT t.*, e.name AS entity_name FROM transactions t JOIN entities e ON e.id = t.entity_id WHERE t.tenant_id = $1 AND t.transaction_type = 'comanda' AND t.status NOT IN ('paid','cancelled') AND t.created_at < NOW() - INTERVAL '2 hours'",
+      "template": "⏰ {entity_name} lleva {minutes} minutos con comanda abierta",
+      "schedule": "every_30min"
+    },
+    {
+      "id": "stock_bajo_minimo",
+      "priority": "high",
+      "title": "Ingrediente/Producto bajo stock",
+      "condition_query": "SELECT * FROM v_products_low_stock WHERE tenant_id = $1",
+      "template": "⚠️ {name}: stock actual {stock_current} {unit_type}",
+      "schedule": "daily_8am"
+    },
+    {
+      "id": "reservas_del_dia",
+      "priority": "medium",
+      "title": "Reservas del día",
+      "condition_query": "SELECT * FROM v_today_schedules WHERE tenant_id = $1 AND schedule_type = 'reserva'",
+      "template": "📅 Reserva: {title} — {scheduled_at}",
+      "schedule": "daily_10am",
+      "expires_at": "end_of_day"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "plato_mas_pedido",
+      "label": "¿Cuál es el plato más pedido?",
+      "icon": "🏆",
+      "query_id": "gastronomia_top_platos",
+      "display": "bar_chart"
+    },
+    {
+      "id": "ticket_promedio",
+      "label": "¿Cuál es el ticket promedio por mesa?",
+      "icon": "🧾",
+      "query_id": "gastronomia_ticket_promedio",
+      "display": "stat_card"
+    },
+    {
+      "id": "ventas_por_dia_semana",
+      "label": "¿Qué días de la semana vendés más?",
+      "icon": "📅",
+      "query_id": "gastronomia_ventas_por_dia",
+      "display": "bar_chart"
+    },
+    {
+      "id": "hora_pico",
+      "label": "¿A qué hora tenés más mesas ocupadas?",
+      "icon": "⏰",
+      "query_id": "gastronomia_hora_pico",
+      "display": "line_chart"
+    }
+  ],
+
+  "dashboard_metrics": [
+    { "id": "ventas_hoy",        "label": "Ventas de hoy",       "query_id": "gastronomia_ventas_hoy",         "icon": "💰", "format": "currency" },
+    { "id": "mesas_ocupadas",    "label": "Mesas ocupadas",      "query_id": "gastronomia_mesas_ocupadas",     "icon": "🍽️", "format": "number" },
+    { "id": "comandas_abiertas", "label": "Comandas abiertas",   "query_id": "gastronomia_comandas_abiertas",  "icon": "📋", "format": "number" },
+    { "id": "ticket_promedio",   "label": "Ticket promedio",     "query_id": "gastronomia_ticket_promedio_hoy","icon": "🧾", "format": "currency" },
+    { "id": "reservas_hoy",      "label": "Reservas hoy",        "query_id": "gastronomia_reservas_hoy",       "icon": "📅", "format": "number" }
+  ],
+
+  "plan_limits": {
+    "basico":  { "modules": ["dashboard", "mesas", "comandas", "menu", "caja"], "max_entities": 30, "max_products": 100, "max_transactions_month": 500, "max_users": 3 },
+    "pro":     { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": 10 },
+    "agencia": { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
+  },
+
+  "demo_data_file": "demo/gastronomia.json"
+}

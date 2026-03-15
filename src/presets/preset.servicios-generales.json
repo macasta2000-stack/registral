@@ -1,0 +1,171 @@
+{
+  "rubro": "servicios_generales",
+  "display_name": "Servicios Generales",
+  "icon": "🔧",
+  "color_primary": "#059669",
+  "color_accent": "#065F46",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Cliente",
+    "clients": "Clientes",
+    "transaction": "Presupuesto / Trabajo",
+    "transactions": "Trabajos",
+    "record": "Movimiento",
+    "product": "Servicio",
+    "products": "Servicios",
+    "entity": "Cliente",
+    "entities": "Clientes",
+    "stock": "Materiales",
+    "new_transaction": "Nuevo trabajo",
+    "new_entity": "Nuevo cliente",
+    "new_product": "Nuevo servicio",
+    "balance": "Saldo pendiente",
+    "schedule": "Trabajo programado",
+    "schedules": "Agenda de trabajos",
+    "dashboard_title": "Panel de servicios"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "clientes",
+    "presupuestos",
+    "trabajos",
+    "agenda",
+    "cobros",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "mesas",            "reason": "Exclusivo de Gastronomía" },
+    { "id": "comandas",         "reason": "Exclusivo de Gastronomía" },
+    { "id": "expedientes",      "reason": "Exclusivo de Abogacía" },
+    { "id": "honorarios",       "reason": "Exclusivo de Abogacía" },
+    { "id": "historia_clinica", "reason": "Exclusivo de Medicina" },
+    { "id": "turnos",           "reason": "Exclusivo de Medicina" },
+    { "id": "remitos",          "reason": "Exclusivo de Corralón" },
+    { "id": "cuenta_corriente", "reason": "Exclusivo de Corralón" },
+    { "id": "agenda_entregas",  "reason": "Exclusivo de Corralón" }
+  ],
+
+  "modules_config": {
+    "tipos_servicio": ["Instalación", "Reparación", "Mantenimiento", "Asesoría", "Diseño", "Consultoría", "Limpieza", "Otros"],
+    "estados_trabajo": ["presupuestado", "aceptado", "en_progreso", "completado", "cobrado", "cancelado"],
+    "trabajos": {
+      "auto_number": true,
+      "sequence_key": "trabajo",
+      "presupuesto_sequence_key": "presupuesto"
+    }
+  },
+
+  "fields": {
+    "entity": {
+      "required": ["name", "telefono"],
+      "optional": ["cuit_dni", "email", "direccion", "tipo_cliente", "notas"],
+      "schema": {
+        "name":         { "type": "text",     "label": "Nombre / Empresa", "placeholder": "" },
+        "cuit_dni":     { "type": "text",     "label": "CUIT / DNI",       "placeholder": "" },
+        "telefono":     { "type": "tel",      "label": "Teléfono",         "placeholder": "" },
+        "email":        { "type": "email",    "label": "Email",            "placeholder": "" },
+        "direccion":    { "type": "text",     "label": "Dirección",        "placeholder": "" },
+        "tipo_cliente": { "type": "select",   "label": "Tipo",             "options": ["Particular", "Empresa", "Recurrente"] },
+        "notas":        { "type": "textarea", "label": "Notas internas",   "placeholder": "" }
+      }
+    },
+    "transaction": {
+      "required": ["entity_id", "title"],
+      "optional": ["tipo_servicio", "descripcion", "direccion_trabajo", "fecha_inicio", "fecha_fin", "payment_method", "notes"],
+      "schema": {
+        "entity_id":        { "type": "entity_search", "label": "Cliente",              "required": true },
+        "title":            { "type": "text",          "label": "Descripción del trabajo","placeholder": "ej: Reparación calefacción central" },
+        "tipo_servicio":    { "type": "select",        "label": "Tipo de servicio",     "source": "modules_config.tipos_servicio" },
+        "descripcion":      { "type": "textarea",      "label": "Detalle",              "placeholder": "Descripción completa del trabajo" },
+        "direccion_trabajo":{ "type": "text",          "label": "Dirección del trabajo","placeholder": "" },
+        "fecha_inicio":     { "type": "date",          "label": "Fecha de inicio",      "placeholder": "" },
+        "fecha_fin":        { "type": "date",          "label": "Fecha estimada fin",   "placeholder": "" },
+        "payment_method":   { "type": "select",        "label": "Forma de pago",        "options": ["Efectivo", "Transferencia", "Cheque", "Tarjeta"] },
+        "notes":            { "type": "textarea",      "label": "Observaciones",        "placeholder": "" }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "trabajo",
+    "steps": [
+      { "from": "presupuestado", "to": "aceptado",    "label": "Presupuesto aceptado", "action": "accept" },
+      { "from": "aceptado",      "to": "en_progreso", "label": "Iniciar trabajo",       "action": "start" },
+      { "from": "en_progreso",   "to": "completado",  "label": "Marcar completado",     "action": "complete" },
+      { "from": "completado",    "to": "cobrado",     "label": "Registrar cobro",       "action": "pay" },
+      { "from": "presupuestado", "to": "cancelado",   "label": "Cancelar",              "action": "cancel" }
+    ],
+    "cta_label": "Nuevo trabajo",
+    "quick_actions": ["nuevo_trabajo", "nuevo_presupuesto", "ver_agenda"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "trabajos_vencidos",
+      "priority": "high",
+      "title": "Trabajos que debían terminar hoy",
+      "condition_query": "SELECT t.*, e.name AS entity_name FROM transactions t JOIN entities e ON e.id = t.entity_id WHERE t.tenant_id = $1 AND t.status = 'en_progreso' AND t.data->>'fecha_fin' <= CURRENT_DATE::TEXT",
+      "template": "🔧 Trabajo vencido: {title} — Cliente: {entity_name}",
+      "schedule": "daily_8am"
+    },
+    {
+      "id": "cobros_pendientes",
+      "priority": "medium",
+      "title": "Trabajos completados sin cobrar hace más de 7 días",
+      "condition_query": "SELECT t.*, e.name AS entity_name FROM transactions t JOIN entities e ON e.id = t.entity_id WHERE t.tenant_id = $1 AND t.status = 'completado' AND t.updated_at < NOW() - INTERVAL '7 days'",
+      "template": "💸 Sin cobrar: {title} — {entity_name} — ${total}",
+      "schedule": "daily_9am"
+    },
+    {
+      "id": "trabajos_del_dia",
+      "priority": "medium",
+      "title": "Trabajos programados para hoy",
+      "condition_query": "SELECT * FROM v_today_schedules WHERE tenant_id = $1 AND schedule_type = 'tarea'",
+      "template": "📋 Trabajo hoy: {title} — {data->>'direccion_trabajo'}",
+      "schedule": "daily_7am",
+      "expires_at": "end_of_day"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "ingresos_mes",
+      "label": "¿Cuánto cobré este mes?",
+      "icon": "💰",
+      "query_id": "servicios_ingresos_mes",
+      "display": "stat_card"
+    },
+    {
+      "id": "trabajos_por_estado",
+      "label": "¿Cuántos trabajos tengo en cada estado?",
+      "icon": "📊",
+      "query_id": "servicios_trabajos_por_estado",
+      "display": "bar_chart"
+    },
+    {
+      "id": "clientes_mas_activos",
+      "label": "¿Cuáles son mis clientes más frecuentes?",
+      "icon": "👥",
+      "query_id": "servicios_clientes_frecuentes",
+      "display": "table"
+    }
+  ],
+
+  "dashboard_metrics": [
+    { "id": "trabajos_en_progreso", "label": "Trabajos en curso",       "query_id": "servicios_en_progreso",   "icon": "🔧", "format": "number" },
+    { "id": "cobros_pendientes",    "label": "Cobros pendientes",        "query_id": "servicios_cobros_pend",   "icon": "💸", "format": "currency" },
+    { "id": "cobrado_mes",          "label": "Cobrado este mes",         "query_id": "servicios_cobrado_mes",   "icon": "💰", "format": "currency" },
+    { "id": "presupuestos_abiertos","label": "Presupuestos sin respuesta","query_id": "servicios_pres_abiertos","icon": "📋", "format": "number" }
+  ],
+
+  "plan_limits": {
+    "basico":  { "modules": ["dashboard", "clientes", "trabajos", "cobros"], "max_entities": 80,  "max_transactions_month": 100, "max_users": 1 },
+    "pro":     { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": 5 },
+    "agencia": { "modules": ["*"], "max_entities": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
+  },
+
+  "demo_data_file": "demo/servicios_generales.json"
+}

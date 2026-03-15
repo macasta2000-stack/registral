@@ -1,0 +1,175 @@
+{
+  "rubro": "retail",
+  "display_name": "Retail / Comercio",
+  "icon": "🛒",
+  "color_primary": "#7C3AED",
+  "color_accent": "#6D28D9",
+  "version": "1.0.0",
+
+  "vocabulary": {
+    "client": "Cliente",
+    "clients": "Clientes",
+    "transaction": "Venta",
+    "transactions": "Ventas",
+    "record": "Movimiento",
+    "product": "Producto",
+    "products": "Productos",
+    "entity": "Cliente",
+    "entities": "Clientes",
+    "stock": "Stock",
+    "new_transaction": "Nueva venta",
+    "new_entity": "Nuevo cliente",
+    "new_product": "Nuevo producto",
+    "balance": "Saldo",
+    "schedule": "Tarea",
+    "schedules": "Tareas",
+    "dashboard_title": "Panel del comercio"
+  },
+
+  "modules_enabled": [
+    "dashboard",
+    "productos",
+    "ventas",
+    "clientes",
+    "stock",
+    "caja",
+    "reportes"
+  ],
+
+  "modules_locked": [
+    { "id": "mesas",            "reason": "Exclusivo de Gastronomía" },
+    { "id": "comandas",         "reason": "Exclusivo de Gastronomía" },
+    { "id": "expedientes",      "reason": "Exclusivo de Abogacía" },
+    { "id": "honorarios",       "reason": "Exclusivo de Abogacía" },
+    { "id": "historia_clinica", "reason": "Exclusivo de Medicina" },
+    { "id": "turnos",           "reason": "Exclusivo de Medicina" },
+    { "id": "remitos",          "reason": "Exclusivo de Corralón" },
+    { "id": "agenda_entregas",  "reason": "Exclusivo de Corralón" },
+    { "id": "cuenta_corriente", "reason": "Exclusivo de Corralón" }
+  ],
+
+  "modules_config": {
+    "stock": {
+      "unit_types": ["unidad", "par", "caja", "pack", "kg", "litro"],
+      "categories": ["Electrónica", "Ropa y calzado", "Hogar", "Alimentos", "Bebidas", "Perfumería", "Papelería", "Juguetes", "Deportes", "Otros"],
+      "low_stock_default_minimum": 3
+    },
+    "ventas": {
+      "auto_number": true,
+      "sequence_key": "ticket",
+      "affects_stock": true,
+      "payment_methods": ["Efectivo", "Tarjeta débito", "Tarjeta crédito", "Transferencia", "QR / Mercado Pago", "Cuenta corriente"]
+    }
+  },
+
+  "fields": {
+    "product": {
+      "required": ["name", "price", "unit_type"],
+      "optional": ["code", "description", "category", "cost", "stock_current", "stock_minimum", "barcode", "brand", "supplier"],
+      "schema": {
+        "code":          { "type": "text",     "label": "Código interno",    "placeholder": "ej: ELC-001" },
+        "barcode":       { "type": "text",     "label": "Código de barras",  "placeholder": "EAN-13" },
+        "name":          { "type": "text",     "label": "Nombre del producto","placeholder": "" },
+        "description":   { "type": "textarea", "label": "Descripción",       "placeholder": "" },
+        "category":      { "type": "select",   "label": "Categoría",         "source": "modules_config.stock.categories" },
+        "brand":         { "type": "text",     "label": "Marca",             "placeholder": "" },
+        "unit_type":     { "type": "select",   "label": "Unidad de venta",   "source": "modules_config.stock.unit_types" },
+        "price":         { "type": "currency", "label": "Precio de venta",   "placeholder": "0.00" },
+        "cost":          { "type": "currency", "label": "Costo",             "visibility": "owner_admin" },
+        "stock_current": { "type": "number",   "label": "Stock actual",      "placeholder": "0" },
+        "stock_minimum": { "type": "number",   "label": "Stock mínimo",      "placeholder": "3" },
+        "supplier":      { "type": "text",     "label": "Proveedor",         "placeholder": "" }
+      }
+    },
+    "entity": {
+      "required": ["name"],
+      "optional": ["dni_cuit", "telefono", "email", "direccion", "notas"],
+      "schema": {
+        "name":     { "type": "text",     "label": "Nombre",    "placeholder": "ej: Juan Pérez" },
+        "dni_cuit": { "type": "text",     "label": "DNI / CUIT","placeholder": "" },
+        "telefono": { "type": "tel",      "label": "Teléfono",  "placeholder": "" },
+        "email":    { "type": "email",    "label": "Email",     "placeholder": "" },
+        "direccion":{ "type": "text",     "label": "Dirección", "placeholder": "" },
+        "notas":    { "type": "textarea", "label": "Notas",     "placeholder": "" }
+      }
+    },
+    "transaction": {
+      "required": [],
+      "optional": ["entity_id", "payment_method", "notes"],
+      "schema": {
+        "entity_id":      { "type": "entity_search", "label": "Cliente (opcional)", "required": false },
+        "payment_method": { "type": "select",        "label": "Forma de pago",      "source": "modules_config.ventas.payment_methods" },
+        "notes":          { "type": "textarea",      "label": "Observaciones",      "placeholder": "" }
+      }
+    }
+  },
+
+  "transaction_flow": {
+    "primary_type": "venta",
+    "steps": [
+      { "from": "draft", "to": "paid",      "label": "Cobrar",    "action": "pay",    "affects_stock": true },
+      { "from": "draft", "to": "cancelled", "label": "Cancelar",  "action": "cancel" }
+    ],
+    "cta_label": "Nueva venta",
+    "quick_actions": ["nueva_venta", "agregar_stock", "ver_caja"]
+  },
+
+  "alert_rules": [
+    {
+      "id": "stock_bajo_minimo",
+      "priority": "high",
+      "title": "Productos bajo stock mínimo",
+      "condition_query": "SELECT * FROM v_products_low_stock WHERE tenant_id = $1",
+      "template": "⚠️ {name}: stock {stock_current} (mínimo {stock_minimum})",
+      "schedule": "daily_8am"
+    },
+    {
+      "id": "sin_ventas_3dias",
+      "priority": "low",
+      "title": "Sin ventas en 3 días",
+      "condition_query": "SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE tenant_id = $1 AND transaction_type = 'venta' AND created_at > NOW() - INTERVAL '3 days')",
+      "template": "📊 Sin registrar ventas en los últimos 3 días. ¿Todo bien?",
+      "schedule": "daily_9am"
+    }
+  ],
+
+  "insights_queries": [
+    {
+      "id": "producto_mas_vendido",
+      "label": "¿Cuál es el producto más vendido?",
+      "icon": "🏆",
+      "query_id": "retail_top_productos",
+      "display": "bar_chart"
+    },
+    {
+      "id": "ventas_semana",
+      "label": "¿Cómo van las ventas esta semana?",
+      "icon": "📈",
+      "query_id": "retail_ventas_semana",
+      "display": "line_chart"
+    },
+    {
+      "id": "margen_por_categoria",
+      "label": "¿Cuál es el margen por categoría?",
+      "icon": "📊",
+      "query_id": "retail_margen_categoria",
+      "display": "bar_chart",
+      "requires_plan": "pro"
+    }
+  ],
+
+  "dashboard_metrics": [
+    { "id": "ventas_hoy",       "label": "Ventas de hoy",       "query_id": "retail_ventas_hoy",        "icon": "💰", "format": "currency" },
+    { "id": "tickets_hoy",      "label": "Tickets emitidos hoy", "query_id": "retail_tickets_hoy",       "icon": "🧾", "format": "number" },
+    { "id": "productos_stock",  "label": "Productos bajo mínimo","query_id": "retail_bajo_minimo",       "icon": "⚠️", "format": "number", "color": "red" },
+    { "id": "ventas_mes",       "label": "Ventas del mes",       "query_id": "retail_ventas_mes",        "icon": "📅", "format": "currency" }
+  ],
+
+  "plan_limits": {
+    "basico":  { "modules": ["dashboard", "productos", "ventas", "stock", "caja"], "max_entities": 50,  "max_products": 200, "max_transactions_month": 500, "max_users": 2 },
+    "pro":     { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": 8 },
+    "agencia": { "modules": ["*"], "max_entities": -1, "max_products": -1, "max_transactions_month": -1, "max_users": -1, "multi_branch": true }
+  },
+
+  "demo_data_file": "demo/retail.json"
+}
