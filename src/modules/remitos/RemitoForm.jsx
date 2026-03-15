@@ -602,23 +602,29 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
         )}
       </div>
       {open && results && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-48 overflow-y-auto">
+        <ul className="absolute left-0 right-0 top-full z-50 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl max-h-64 overflow-y-auto">
           {results.map(e => (
             <li key={e.id}>
               <button
                 type="button"
                 onMouseDown={() => handleSelect(e)}
-                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 text-sm"
+                className="w-full text-left px-4 py-3 hover:bg-amber-50 border-b border-gray-50 last:border-b-0"
               >
-                <span className="font-medium">{e.name}</span>
-                {e.data?.telefono && <span className="ml-2 text-xs text-gray-400">{e.data.telefono}</span>}
+                <span className="text-sm font-semibold text-gray-800">{e.name}</span>
+                {(e.data?.telefono || e.data?.cuit_dni) && (
+                  <span className="block text-xs text-gray-400 mt-0.5">
+                    {e.data?.cuit_dni && <span>{e.data.cuit_dni}</span>}
+                    {e.data?.cuit_dni && e.data?.telefono && <span> · </span>}
+                    {e.data?.telefono && <span>{e.data.telefono}</span>}
+                  </span>
+                )}
               </button>
             </li>
           ))}
         </ul>
       )}
       {open && results && results.length === 0 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg px-3 py-3 text-sm text-gray-400">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl px-4 py-4 text-sm text-gray-400 text-center">
           {query ? `Sin resultados para "${query}"` : 'No hay clientes. Crealos desde la sección Clientes.'}
         </div>
       )}
