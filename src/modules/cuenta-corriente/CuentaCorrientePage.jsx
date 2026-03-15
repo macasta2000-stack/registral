@@ -27,11 +27,16 @@ function useCuentaCorrienteData() {
   const clientes = useLiveQuery(
     async () => {
       if (!tenantId) return null
-      return db.entities
-        .where('[tenant_id+entity_type]')
-        .equals([tenantId, 'cliente'])
-        .filter(e => e.is_active !== false)
+      const all = await db.entities
+        .where('tenant_id')
+        .equals(tenantId)
         .toArray()
+      // Prefer entity_type='cliente', fallback to all active entities
+      let clients = all.filter(e => e.is_active !== false && e.entity_type === 'cliente')
+      if (clients.length === 0) {
+        clients = all.filter(e => e.is_active !== false)
+      }
+      return clients
     },
     [tenantId],
     null

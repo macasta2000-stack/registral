@@ -509,18 +509,29 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
   const containerRef        = useRef(null)
 
   // Show all clients on focus (empty query), filter when typing
+  // Use simple tenant_id index for maximum compatibility — some entities
+  // may lack entity_type if created before the field was mandatory.
   const results = useLiveQuery(
     async () => {
       if (!tenantId) return []
       const all = await db.entities
-        .where('[tenant_id+entity_type]')
-        .equals([tenantId, 'cliente'])
-        .filter(e => e.is_active !== false)
+        .where('tenant_id')
+        .equals(tenantId)
         .toArray()
 
-      if (!debQ) return all.slice(0, 20) // Show first 20 on focus
+      // Prefer entity_type='cliente', fallback to all active entities
+      let clients = all.filter(e => e.is_active !== false && e.entity_type === 'cliente')
+      if (clients.length === 0) {
+        clients = all.filter(e => e.is_active !== false)
+      }
+
+      if (!debQ) return clients.slice(0, 20)
       const q = debQ.toLowerCase()
-      return all.filter(e => e.name?.toLowerCase().includes(q)).slice(0, 10)
+      return clients.filter(e =>
+        e.name?.toLowerCase().includes(q) ||
+        e.data?.cuit_dni?.toLowerCase().includes(q) ||
+        e.data?.telefono?.includes(q)
+      ).slice(0, 10)
     },
     [tenantId, debQ],
     []
@@ -591,9 +602,9 @@ function EntitySearchInput({ tenantId, value, onSelect, placeholder }) {
           ))}
         </ul>
       )}
-      {open && results && results.length === 0 && query && (
+      {open && results && results.length === 0 && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg px-3 py-3 text-sm text-gray-400">
-          Sin resultados para &ldquo;{query}&rdquo;
+          {query ? `Sin resultados para "${query}"` : 'No hay clientes. Crealos desde la sección Clientes.'}
         </div>
       )}
     </div>

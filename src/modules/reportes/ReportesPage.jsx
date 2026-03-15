@@ -77,10 +77,9 @@ function useReportData() {
   const entities = useLiveQuery(
     async () => {
       if (!tenantId) return null
-      return db.entities
-        .where('[tenant_id+entity_type]')
-        .equals([tenantId, 'cliente'])
-        .toArray()
+      const all = await db.entities.where('tenant_id').equals(tenantId).toArray()
+      const clients = all.filter(e => e.entity_type === 'cliente')
+      return clients.length > 0 ? clients : all.filter(e => e.is_active !== false)
     },
     [tenantId],
     null

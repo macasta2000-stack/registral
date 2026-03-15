@@ -20,10 +20,13 @@ export function useClientes(filters = {}) {
   return useLiveQuery(
     async () => {
       if (!tenantId) return []
-      let arr = await db.entities
-        .where('[tenant_id+entity_type]')
-        .equals([tenantId, 'cliente'])
+      const all = await db.entities
+        .where('tenant_id')
+        .equals(tenantId)
         .toArray()
+      // Prefer entity_type='cliente', fallback to all active entities
+      let arr = all.filter(e => e.entity_type === 'cliente')
+      if (arr.length === 0) arr = [...all] // fallback if no entity_type set
 
       if (!filters.includeInactive) {
         arr = arr.filter(e => e.is_active !== false)

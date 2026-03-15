@@ -86,10 +86,10 @@ function useSchedules(weekDates) {
   const entities = useLiveQuery(
     async () => {
       if (!tenantId) return {}
-      const arr = await db.entities
-        .where('[tenant_id+entity_type]')
-        .equals([tenantId, 'cliente'])
-        .toArray()
+      const allEntities = await db.entities.where('tenant_id').equals(tenantId).toArray()
+      const arr = allEntities.filter(e => e.entity_type === 'cliente').length > 0
+        ? allEntities.filter(e => e.entity_type === 'cliente')
+        : allEntities.filter(e => e.is_active !== false)
       const map = {}
       arr.forEach(e => { map[e.id] = e })
       return map
