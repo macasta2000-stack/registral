@@ -12,6 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       workbox: {
+        // Force new SW to take over immediately (no waiting for tabs to close)
+        skipWaiting: true,
+        clientsClaim: true,
         // Cache all static assets (JS, CSS, HTML, fonts, images)
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Runtime caching for Supabase API and fonts

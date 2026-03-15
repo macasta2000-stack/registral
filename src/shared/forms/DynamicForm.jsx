@@ -30,6 +30,13 @@ import {
 import PropTypes from 'prop-types'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useFields, usePreset } from '../../core/engine/PresetContext'
+import { useAutoSave } from '../../core/engine/useAutoSave'
+import { db }          from '../../core/offline/db'
+import { useAuth }     from '../../core/auth/useAuth'
+
+// ─────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────
 
 /**
  * Resuelve un path tipo "modules_config.stock.categories" contra el preset.
@@ -45,9 +52,6 @@ function resolveSourcePath(preset, sourcePath) {
   }
   return obj
 }
-import { useAutoSave } from '../../core/engine/useAutoSave'
-import { db }          from '../../core/offline/db'
-import { useAuth }     from '../../core/auth/useAuth'
 
 // ─────────────────────────────────────────────────────────────
 // HOOK: useFormSchema
