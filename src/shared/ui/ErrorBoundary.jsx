@@ -21,6 +21,24 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('[ErrorBoundary]', error, errorInfo)
+
+    // Auto-reload on stale chunk errors (after new deploy)
+    const msg = error?.message || ''
+    if (
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Loading CSS chunk')
+    ) {
+      const key = 'registral-chunk-reload'
+      const last = sessionStorage.getItem(key)
+      const now = Date.now()
+      if (!last || now - Number(last) > 10_000) {
+        sessionStorage.setItem(key, String(now))
+        window.location.reload()
+        return
+      }
+    }
   }
 
   render() {
