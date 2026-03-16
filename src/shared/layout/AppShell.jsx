@@ -151,7 +151,7 @@ export default function AppShell() {
 // ─────────────────────────────────────────────────────────────
 
 function TopBar({ onHamburger, onSearchOpen }) {
-  const { tenant, user, signOut, businessName } = useAuth()
+  const { tenant, user, signOut, businessName, isSuperAdmin, isImpersonating, restoreTenant } = useAuth()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -174,6 +174,21 @@ function TopBar({ onHamburger, onSearchOpen }) {
   const initials = getInitials(businessName || user?.email || 'U')
 
   return (
+    <>
+    {/* Impersonation banner */}
+    {isImpersonating && (
+      <div className="sticky top-0 z-20 bg-purple-600 text-white px-4 py-2 flex items-center justify-between text-sm">
+        <span>
+          👁️ Viendo cuenta: <strong>{businessName || 'Sin nombre'}</strong>
+        </span>
+        <button
+          onClick={restoreTenant}
+          className="px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold text-xs transition"
+        >
+          ← Volver a mi cuenta
+        </button>
+      </div>
+    )}
     <header className="
       sticky top-0 z-10
       bg-white border-b border-gray-100
@@ -272,6 +287,7 @@ function TopBar({ onHamburger, onSearchOpen }) {
             <UserDropdown
               user={user}
               businessName={businessName}
+              isSuperAdmin={isSuperAdmin}
               onSignOut={() => { setUserMenuOpen(false); signOut() }}
               onClose={() => setUserMenuOpen(false)}
               onNavigate={(path) => { setUserMenuOpen(false); navigate(path) }}
@@ -280,6 +296,7 @@ function TopBar({ onHamburger, onSearchOpen }) {
         </div>
       </div>
     </header>
+    </>
   )
 }
 
@@ -292,7 +309,7 @@ TopBar.propTypes = {
 // USER DROPDOWN
 // ─────────────────────────────────────────────────────────────
 
-function UserDropdown({ user, businessName, onSignOut, onClose, onNavigate }) {
+function UserDropdown({ user, businessName, isSuperAdmin, onSignOut, onClose, onNavigate }) {
   return (
     <div className="
       absolute right-0 top-11 z-50
@@ -305,10 +322,24 @@ function UserDropdown({ user, businessName, onSignOut, onClose, onNavigate }) {
           {businessName || 'Mi negocio'}
         </p>
         <p className="text-xs text-gray-400 truncate mt-0.5">{user?.email}</p>
+        {isSuperAdmin && (
+          <span className="inline-block mt-1 text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">
+            SUPERADMIN
+          </span>
+        )}
       </div>
 
       {/* Opciones */}
       <div className="py-1">
+        {isSuperAdmin && (
+          <button
+            onClick={() => { onClose(); onNavigate('/admin') }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition"
+          >
+            <span className="text-base">🛡️</span>
+            Panel de Admin
+          </button>
+        )}
         <button
           onClick={() => { onClose(); onNavigate('/configuracion') }}
           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
@@ -331,6 +362,7 @@ function UserDropdown({ user, businessName, onSignOut, onClose, onNavigate }) {
 UserDropdown.propTypes = {
   user:         PropTypes.object,
   businessName: PropTypes.string,
+  isSuperAdmin: PropTypes.bool,
   onSignOut:    PropTypes.func.isRequired,
   onClose:      PropTypes.func.isRequired,
   onNavigate:   PropTypes.func.isRequired,

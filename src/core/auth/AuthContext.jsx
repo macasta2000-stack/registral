@@ -21,11 +21,13 @@ import { createTenantAndUser } from '../supabase/queries/provisionTenant'
 // ─────────────────────────────────────────────────────────────
 
 const initialState = {
-  user:      null,   // auth.User de Supabase
-  tenant:    null,   // fila completa de tenants{}
-  userRole:  null,   // 'owner' | 'admin' | 'operator' | 'readonly'
-  loading:   true,   // true durante la hidratación inicial
-  error:     null,
+  user:           null,   // auth.User de Supabase
+  tenant:         null,   // fila completa de tenants{}
+  userRole:       null,   // 'owner' | 'admin' | 'operator' | 'readonly'
+  isSuperAdmin:   false,  // true si el usuario es superadmin
+  originalTenant: null,   // tenant original del superadmin (para volver)
+  loading:        true,   // true durante la hidratación inicial
+  error:          null,
 }
 
 function authReducer(state, action) {
@@ -35,14 +37,27 @@ function authReducer(state, action) {
     case 'SET_SESSION':
       return {
         ...state,
-        user:     action.payload.user,
-        tenant:   action.payload.tenant,
-        userRole: action.payload.userRole,
-        loading:  false,
-        error:    null,
+        user:         action.payload.user,
+        tenant:       action.payload.tenant,
+        userRole:     action.payload.userRole,
+        isSuperAdmin: action.payload.isSuperAdmin ?? state.isSuperAdmin,
+        loading:      false,
+        error:        null,
       }
     case 'UPDATE_TENANT':
       return { ...state, tenant: { ...state.tenant, ...action.payload } }
+    case 'SWITCH_TENANT':
+      return {
+        ...state,
+        tenant:         action.payload.tenant,
+        originalTenant: state.originalTenant ?? state.tenant,
+      }
+    case 'RESTORE_TENANT':
+      return {
+        ...state,
+        tenant:         state.originalTenant ?? state.tenant,
+        originalTenant: null,
+      }
     case 'SET_ERROR':
       return { ...state, error: action.payload, loading: false }
     case 'SIGN_OUT':
@@ -66,7 +81,7 @@ async function fetchUserAndTenant(authUserId) {
   // Traer user row primero (necesitamos tenant_id para la segunda query)
   const { data: userRow, error: userError } = await supabase
     .from('users')
-    .select('tenant_id, role, full_name, is_active')
+    .select('tenant_id, role, full_name, is_active, is_superadmin')
     .eq('id', authUserId)
     .single()
 
@@ -123,9 +138,10 @@ export function AuthProvider({ children }) {
           dispatch({
             type: 'SET_SESSION',
             payload: {
-              user:     session.user,
-              tenant:   tenant ?? null,
-              userRole: userRow?.role ?? null,
+              user:         session.user,
+              tenant:       tenant ?? null,
+              userRole:     userRow?.role ?? null,
+              isSuperAdmin: userRow?.is_superadmin ?? false,
             },
           })
         }
@@ -157,9 +173,10 @@ export function AuthProvider({ children }) {
               dispatch({
                 type: 'SET_SESSION',
                 payload: {
-                  user:     session.user,
-                  tenant:   tenant ?? null,
-                  userRole: userRow?.role ?? null,
+                  user:         session.user,
+                  tenant:       tenant ?? null,
+                  userRole:     userRow?.role ?? null,
+                  isSuperAdmin: userRow?.is_superadmin ?? false,
                 },
               })
             }
@@ -262,6 +279,29 @@ export function AuthProvider({ children }) {
     return data
   }, [state.tenant?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── switchTenant (superadmin only) ────────────────────────
+
+  const switchTenant = useCallback(async (targetTenantId) => {
+    if (!state.isSuperAdmin) throw new Error('Solo superadmin puede cambiar de tenant')
+
+    const { data, error } = await supabase.rpc('admin_get_tenant', {
+      p_tenant_id: targetTenantId,
+    })
+    if (error) throw error
+
+    const tenantData = data?.tenant
+    if (!tenantData) throw new Error('Tenant no encontrado')
+
+    dispatch({ type: 'SWITCH_TENANT', payload: { tenant: tenantData } })
+    return tenantData
+  }, [state.isSuperAdmin])
+
+  // ── restoreTenant (volver a tu cuenta) ──────────────────
+
+  const restoreTenant = useCallback(() => {
+    dispatch({ type: 'RESTORE_TENANT' })
+  }, [])
+
   // ── refreshTenant ─────────────────────────────────────────
 
   const refreshTenant = useCallback(async () => {
@@ -298,12 +338,17 @@ export function AuthProvider({ children }) {
     signUp,
     updateTenant,
     refreshTenant,
+    switchTenant,
+    restoreTenant,
     // Shortcuts de uso frecuente
-    isAuthenticated: !!state.user,
-    hasRubro:        !!state.tenant?.rubro,
-    isOnboarded:     !!state.tenant?.settings?.onboarding_completed,
-    tenantId:        state.tenant?.id ?? null,
-    businessName:    state.tenant?.settings?.business_name || state.tenant?.name || '',
+    isAuthenticated:  !!state.user,
+    hasRubro:         !!state.tenant?.rubro,
+    isOnboarded:      !!state.tenant?.settings?.onboarding_completed,
+    tenantId:         state.tenant?.id ?? null,
+    businessName:     state.tenant?.settings?.business_name || state.tenant?.name || '',
+    isSuperAdmin:     state.isSuperAdmin,
+    isImpersonating:  !!state.originalTenant,
+    originalTenantId: state.originalTenant?.id ?? null,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

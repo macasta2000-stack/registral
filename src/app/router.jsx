@@ -38,6 +38,7 @@ const ClientesPage         = lazy(() => import('../modules/clientes/ClientesPage
 const CajaPage             = lazy(() => import('../modules/caja/CajaPage'))
 const ReportesPage         = lazy(() => import('../modules/reportes/ReportesPage'))
 const ConfiguracionPage    = lazy(() => import('../modules/configuracion/ConfiguracionPage'))
+const AdminPage            = lazy(() => import('../modules/admin/AdminPage'))
 
 // ─────────────────────────────────────────────────────────────
 // SUSPENSE FALLBACK
@@ -242,6 +243,12 @@ export function AppRouter() {
           <Route
             path="configuracion"
             element={<SuspensePage><ConfiguracionPage /></SuspensePage>}
+          />
+
+          {/* Admin — solo superadmin */}
+          <Route
+            path="admin"
+            element={<SuspensePage><AdminPage /></SuspensePage>}
           />
 
           {/* 404 dentro del shell */}
