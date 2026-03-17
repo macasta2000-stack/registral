@@ -10,7 +10,9 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { usePreset }   from '../../core/engine/PresetContext'
+import { useAuth }     from '../../core/auth/useAuth'
 import { useRemito, useRemitoActions } from './useRemitos'
+import { generateReceiptHTML } from './receiptGenerator'
 import {
   ConfirmDialog, PageHeader, Spinner,
   StatusBadge, TRANSACTION_STATUS_CONFIG,
@@ -19,10 +21,11 @@ import {
 
 const STATUS_FLOW = ['draft', 'confirmed', 'delivered', 'paid']
 
-export default function RemitoDetail({ id, onClose }) {
-  const { preset }   = usePreset()
-  const vocab        = preset?.vocabulary ?? {}
-  const transLabel   = vocab.transaction ?? 'Remito'
+export default function RemitoDetail({ id, onClose, onEdit }) {
+  const { preset }       = usePreset()
+  const { businessName } = useAuth()
+  const vocab            = preset?.vocabulary ?? {}
+  const transLabel       = vocab.transaction ?? 'Remito'
 
   const { remito, items, entity } = useRemito(id)
   const { confirmRemito, deliverRemito, payRemito, cancelRemito } = useRemitoActions()
@@ -62,6 +65,21 @@ export default function RemitoDetail({ id, onClose }) {
     }
   }
 
+  function handlePrint() {
+    const html = generateReceiptHTML({
+      remito,
+      items,
+      entity,
+      businessName,
+      vocab,
+    })
+    const w = window.open('', '_blank', 'width=800,height=600')
+    if (!w) return
+    w.document.write(html)
+    w.document.close()
+    setTimeout(() => w.print(), 400)
+  }
+
   if (!remito) {
     return (
       <div className="flex-1 flex items-center justify-center py-16">
@@ -81,9 +99,22 @@ export default function RemitoDetail({ id, onClose }) {
       <PageHeader
         title={`${transLabel} ${remito.number}`}
         action={
-          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1">
-            ← Volver
-          </button>
+          <div className="flex items-center gap-2">
+            {remito.status !== 'draft' && (
+              <button
+                onClick={handlePrint}
+                className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 flex items-center gap-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Imprimir
+              </button>
+            )}
+            <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1">
+              ← Volver
+            </button>
+          </div>
         }
       />
 
@@ -218,13 +249,23 @@ export default function RemitoDetail({ id, onClose }) {
       {!isCancelled && (
         <div className="fixed bottom-0 left-0 right-0 md:relative bg-white border-t border-gray-100 px-4 py-4">
           {remito.status === 'draft' && (
-            <button
-              onClick={() => setConfirmDialog({ type: 'confirm', label: 'confirmar este remito' })}
-              disabled={!!loading}
-              className="w-full py-3.5 rounded-xl bg-blue-500 text-white font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {loading === 'confirm' ? <><Spinner /> Confirmando...</> : '✓ Confirmar remito'}
-            </button>
+            <div className="flex gap-3">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(id)}
+                  className="flex-1 py-3.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  Editar
+                </button>
+              )}
+              <button
+                onClick={() => setConfirmDialog({ type: 'confirm', label: 'confirmar este remito' })}
+                disabled={!!loading}
+                className="flex-1 py-3.5 rounded-xl bg-blue-500 text-white font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {loading === 'confirm' ? <><Spinner /> Confirmando...</> : 'Confirmar remito'}
+              </button>
+            </div>
           )}
           {remito.status === 'confirmed' && (
             <button
@@ -319,6 +360,7 @@ export default function RemitoDetail({ id, onClose }) {
 RemitoDetail.propTypes = {
   id:      PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
+  onEdit:  PropTypes.func,
 }
 
 function Row({ label, value }) {

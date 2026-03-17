@@ -9,6 +9,7 @@ import { useDocumentTitle } from '../../shared/ui/useDocumentTitle'
 import { usePreset }       from '../../core/engine/PresetContext'
 import { useProducts, useLowStockProducts } from './useStock'
 import ProductModal         from './ProductModal'
+import CsvImportModal       from './CsvImportModal'
 import {
   EmptyState, PageHeader, PrimaryButton,
   StatusBadge, STOCK_STATUS_CONFIG,
@@ -29,6 +30,7 @@ export default function StockPage() {
   const [lowOnly, setLowOnly]   = useState(false)
   const [selected, setSelected] = useState(null) // null | 'new' | product object
   const [showModal, setShowModal] = useState(false)
+  const [showCsvImport, setShowCsvImport] = useState(false)
 
   // Handle navigation state from dashboard
   useEffect(() => {
@@ -75,9 +77,22 @@ export default function StockPage() {
             : 'Cargando...'
         }
         action={
-          <PrimaryButton onClick={openNew}>
-            + {productLabel}
-          </PrimaryButton>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowCsvImport(true)}
+              className="
+                flex items-center gap-1.5 px-3 py-2.5 rounded-xl
+                border border-gray-200 bg-white text-gray-600
+                text-sm font-medium hover:bg-gray-50 transition
+                active:scale-[0.98]
+              "
+            >
+              📄 Importar CSV
+            </button>
+            <PrimaryButton onClick={openNew}>
+              + {productLabel}
+            </PrimaryButton>
+          </div>
         }
       />
 
@@ -241,6 +256,11 @@ export default function StockPage() {
           product={selected}
           onClose={closeModal}
         />
+      )}
+
+      {/* ── CSV Import Modal ── */}
+      {showCsvImport && (
+        <CsvImportModal onClose={() => setShowCsvImport(false)} />
       )}
     </div>
   )

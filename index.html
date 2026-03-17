@@ -14,6 +14,29 @@
     <title>Registral — Gestión de negocios</title>
   </head>
   <body>
+    <!-- SPA redirect: restore path from 404.html query-param hack -->
+    <script>
+      (function () {
+        var loc = window.location;
+        // 404.html encodes the real SPA path as /?/some-path
+        // with original query params appended as &key=val (& encoded as ~and~)
+        if (loc.search[1] === '/') {
+          var decoded = loc.search
+            .slice(1)                       // remove leading ?
+            .replace(/~and~/g, '&');        // restore & characters
+          // decoded is now: /some-path&key=val&key2=val2
+          // First segment is the path, rest are query params
+          var parts = decoded.split('&');
+          var path = parts[0];              // /some-path
+          var query = parts.length > 1 ? '?' + parts.slice(1).join('&') : '';
+          var hash = loc.hash;
+          // pathname ends with / (e.g. /registral/), remove trailing slash before appending path
+          window.history.replaceState(null, null,
+            loc.pathname.slice(0, -1) + path + query + hash
+          );
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

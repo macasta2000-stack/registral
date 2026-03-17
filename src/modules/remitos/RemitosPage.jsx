@@ -100,8 +100,18 @@ export default function RemitosPage() {
     return <RemitoForm onClose={() => setView(null)} />
   }
 
+  if (view?.mode === 'edit') {
+    return <RemitoForm editId={view.id} onClose={() => setView(null)} />
+  }
+
   if (view?.mode === 'detail') {
-    return <RemitoDetail id={view.id} onClose={() => setView(null)} />
+    return (
+      <RemitoDetail
+        id={view.id}
+        onClose={() => setView(null)}
+        onEdit={(id) => setView({ mode: 'edit', id })}
+      />
+    )
   }
 
   return (
@@ -216,7 +226,7 @@ export default function RemitosPage() {
                             onClick={() => setConfirmAction({ type: 'confirm', id: r.id, label: `confirmar el remito ${r.number}` })}
                           />
                           <ActionBtn label="Editar" color="gray" loading={false}
-                            onClick={() => setView({ mode: 'detail', id: r.id })} />
+                            onClick={() => setView({ mode: 'edit', id: r.id })} />
                           <ActionBtn label="Anular" color="red" loading={false}
                             onClick={() => setConfirmAction({ type: 'cancel', id: r.id, label: `anular el remito ${r.number}` })} />
                         </>

@@ -38,7 +38,7 @@ const EMPTY_ITEM = () => ({
   subtotal:    0,
 })
 
-export default function RemitoForm({ onClose }) {
+export default function RemitoForm({ onClose, editId }) {
   const { preset }   = usePreset()
   const { tenantId } = useAuth()
   const vocab        = preset?.vocabulary ?? {}
@@ -56,7 +56,9 @@ export default function RemitoForm({ onClose }) {
     ?? null
   const paymentMethods = presetPaymentMethods ?? DEFAULT_PAYMENT_METHODS
 
-  const { createRemito, confirmRemito } = useRemitoActions()
+  const { createRemito, updateRemito, confirmRemito } = useRemitoActions()
+
+  const isEdit = !!editId
 
   // Header fields
   const [entityId,       setEntityId]       = useState(null)
@@ -74,6 +76,60 @@ export default function RemitoForm({ onClose }) {
   // Submit state
   const [submitting, setSubmitting]   = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [loadingEdit, setLoadingEdit] = useState(!!editId)
+
+  // Cargar datos del remito existente para edición
+  useEffect(() => {
+    if (!editId) return
+    let cancelled = false
+
+    async function loadRemito() {
+      try {
+        const remito = await db.transactions.get(editId)
+        if (cancelled || !remito) { setLoadingEdit(false); return }
+
+        const existingItems = await db.transaction_items
+          .where('transaction_id').equals(editId).toArray()
+
+        // Cargar nombre del cliente
+        let clientName = ''
+        if (remito.entity_id) {
+          const entity = await db.entities.get(remito.entity_id)
+          if (entity) clientName = entity.name
+        }
+
+        setEntityId(remito.entity_id)
+        setEntityName(clientName)
+        setConFlete(remito.data?.con_flete ?? false)
+        setDirEntrega(remito.data?.direccion_entrega ?? '')
+        setChofer(remito.data?.chofer ?? '')
+        setPaymentMethod(remito.payment_method ?? '')
+        setNotes(remito.notes ?? '')
+        setDiscount(remito.discount ?? 0)
+
+        if (existingItems.length > 0) {
+          const sorted = existingItems.sort((a, b) => (a._order ?? 0) - (b._order ?? 0))
+          setItems(sorted.map(it => ({
+            _key:        uuid4(),
+            product_id:  it.product_id,
+            description: it.description ?? '',
+            unit_type:   it.unit_type ?? 'unidad',
+            quantity:    it.quantity ?? 1,
+            unit_price:  it.unit_price ?? 0,
+            discount_pct:it.discount_pct ?? 0,
+            subtotal:    it.subtotal ?? 0,
+          })))
+        }
+      } catch (err) {
+        console.error('[RemitoForm] Error loading remito for edit:', err)
+      } finally {
+        if (!cancelled) setLoadingEdit(false)
+      }
+    }
+
+    loadRemito()
+    return () => { cancelled = true }
+  }, [editId])
 
   // Calcular totales en tiempo real
   const subtotal = items.reduce((s, it) => s + Number(it.subtotal || 0), 0)
@@ -156,16 +212,25 @@ export default function RemitoForm({ onClose }) {
         subtotal:    Number(it.subtotal || 0),
       }))
 
-      const result = await createRemito(remitoData, cleanItems)
+      if (isEdit) {
+        await updateRemito(editId, remitoData, cleanItems)
 
-      if (confirm) {
-        // Obtener el ID del remito recién creado
-        // bulkSave retorna la primera op que es el remito
-        const remitoId = result?.[0]?.id ?? null
-        if (remitoId) await confirmRemito(remitoId)
-        toast.success(`${transLabel} creado y confirmado`)
+        if (confirm) {
+          await confirmRemito(editId)
+          toast.success(`${transLabel} actualizado y confirmado`)
+        } else {
+          toast.success('Borrador actualizado')
+        }
       } else {
-        toast.success('Borrador guardado')
+        const result = await createRemito(remitoData, cleanItems)
+
+        if (confirm) {
+          const remitoId = result?.[0]?.id ?? null
+          if (remitoId) await confirmRemito(remitoId)
+          toast.success(`${transLabel} creado y confirmado`)
+        } else {
+          toast.success('Borrador guardado')
+        }
       }
 
       onClose()
@@ -179,10 +244,21 @@ export default function RemitoForm({ onClose }) {
 
   const hasItems = items.length > 0 && items.some(it => it.description)
 
+  if (loadingEdit) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-16">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner />
+          <p className="text-sm text-gray-400">Cargando {transLabel.toLowerCase()}...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col min-h-full bg-gray-50">
       <PageHeader
-        title={`Nuevo ${transLabel.toLowerCase()}`}
+        title={isEdit ? `Editar ${transLabel.toLowerCase()}` : `Nuevo ${transLabel.toLowerCase()}`}
         action={
           <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1">
             Cancelar
@@ -303,7 +379,7 @@ export default function RemitoForm({ onClose }) {
           disabled={submitting || !hasItems}
           className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium disabled:opacity-50"
         >
-          {submitting ? <span className="flex items-center justify-center gap-2"><Spinner /> Guardando...</span> : 'Guardar borrador'}
+          {submitting ? <span className="flex items-center justify-center gap-2"><Spinner /> Guardando...</span> : isEdit ? 'Guardar cambios' : 'Guardar borrador'}
         </button>
         <button
           onClick={() => handleSave(true)}
@@ -317,7 +393,10 @@ export default function RemitoForm({ onClose }) {
   )
 }
 
-RemitoForm.propTypes = { onClose: PropTypes.func.isRequired }
+RemitoForm.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  editId:  PropTypes.string,
+}
 
 // ─────────────────────────────────────────────────────────────
 // ItemRow — fila de ítem con búsqueda de producto

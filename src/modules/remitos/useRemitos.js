@@ -460,7 +460,78 @@ export function useRemitoActions() {
     return bulkSave(ops, { critical: false })
   }, [tenantId, user?.id, bulkSave])
 
+  /**
+   * Actualiza un remito borrador: reemplaza datos y sus ítems.
+   * Solo permitido en estado 'draft'.
+   */
+  const updateRemito = useCallback(async (id, remitoData, items) => {
+    const existing = await db.transactions.get(id)
+    if (!existing) throw new Error('Remito no encontrado')
+    if (existing.status !== 'draft') throw new Error('Solo se pueden editar remitos en borrador')
+
+    const now = new Date().toISOString()
+
+    // Calcular totales
+    const subtotal = items.reduce((sum, it) => sum + Number(it.subtotal ?? 0), 0)
+    const discount = Math.min(Number(remitoData.discount ?? 0), subtotal)
+    const tax      = 0
+    const total    = Math.max(0, subtotal - discount + tax)
+
+    const updatedRemito = {
+      ...existing,
+      entity_id:      remitoData.entity_id,
+      subtotal,
+      discount,
+      tax,
+      total,
+      payment_method: remitoData.payment_method ?? null,
+      notes:          remitoData.notes          ?? null,
+      data: {
+        ...existing.data,
+        con_flete:          remitoData.con_flete          ?? false,
+        direccion_entrega:  remitoData.direccion_entrega  ?? '',
+        chofer:             remitoData.chofer             ?? '',
+        remito_externo_nro: remitoData.remito_externo_nro ?? '',
+      },
+      updated_at: now,
+    }
+
+    // Borrar ítems viejos e insertar nuevos
+    const oldItems = await db.transaction_items.where('transaction_id').equals(id).toArray()
+    const deleteOps = oldItems.map(item => ({
+      table: 'transaction_items',
+      operation: 'DELETE',
+      record: item,
+    }))
+
+    const insertOps = items.map((item, idx) => ({
+      table: 'transaction_items',
+      operation: 'INSERT',
+      record: {
+        id:             uuid4(),
+        tenant_id:      tenantId,
+        transaction_id: id,
+        product_id:     item.product_id ?? null,
+        description:    item.description,
+        unit_type:      item.unit_type,
+        quantity:       Number(item.quantity),
+        unit_price:     Number(item.unit_price),
+        discount_pct:   Number(item.discount_pct ?? 0),
+        subtotal:       Number(item.subtotal),
+        data:           {},
+        created_at:     now,
+        _order:         idx,
+      },
+    }))
+
+    return bulkSave([
+      { table: 'transactions', operation: 'UPDATE', record: updatedRemito },
+      ...deleteOps,
+      ...insertOps,
+    ], { critical: false })
+  }, [tenantId, bulkSave])
+
   return {
-    createRemito, confirmRemito, deliverRemito, payRemito, cancelRemito, syncStatus,
+    createRemito, updateRemito, confirmRemito, deliverRemito, payRemito, cancelRemito, syncStatus,
   }
 }

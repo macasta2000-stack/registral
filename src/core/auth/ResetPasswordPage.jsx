@@ -21,25 +21,49 @@ export default function ResetPasswordPage() {
   const [success, setSuccess]         = useState(false)
   const [hasSession, setHasSession]   = useState(null) // null = loading
 
-  // Verificar que hay una sesión de recovery activa
+  // Verificar que hay una sesión de recovery activa.
+  // Supabase detectSessionInUrl processes the hash/query tokens asynchronously,
+  // so we listen for auth state changes and also add a delayed fallback check.
   useEffect(() => {
-    async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setHasSession(!!session)
-    }
+    let settled = false
 
-    // Listen for PASSWORD_RECOVERY event from Supabase
+    // Listen for auth state changes — PASSWORD_RECOVERY or SIGNED_IN from token exchange
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === 'PASSWORD_RECOVERY') {
+          settled = true
+          setHasSession(true)
+        } else if (event === 'SIGNED_IN' && !settled) {
+          // PKCE flow fires SIGNED_IN instead of PASSWORD_RECOVERY
+          settled = true
           setHasSession(true)
         }
       }
     )
 
+    // Check if there's already a session (e.g., token was processed before this component mounted)
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session && !settled) {
+        settled = true
+        setHasSession(true)
+      }
+    }
+
     checkSession()
 
-    return () => subscription.unsubscribe()
+    // Fallback: if after 4 seconds no session was detected, show expired message.
+    // This gives Supabase enough time to exchange the token from the URL.
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        setHasSession(false)
+      }
+    }, 4000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   async function handleSubmit(e) {
