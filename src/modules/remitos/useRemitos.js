@@ -123,11 +123,11 @@ export function useRemitoActions() {
     const number   = await getNextRemitoNumber(tenantId)
     const now      = new Date().toISOString()
 
-    // Calcular totales
+    // Calcular totales (discount nunca puede exceder subtotal)
     const subtotal = items.reduce((sum, it) => sum + Number(it.subtotal ?? 0), 0)
-    const discount = Number(remitoData.discount ?? 0)
+    const discount = Math.min(Number(remitoData.discount ?? 0), subtotal)
     const tax      = 0
-    const total    = subtotal - discount + tax
+    const total    = Math.max(0, subtotal - discount + tax)
 
     const remito = {
       id:               remitoId,
@@ -213,9 +213,9 @@ export function useRemitoActions() {
       const product = await db.products.get(item.product_id)
       if (!product) continue
 
-      const stockBefore = Number(product.stock_current)
+      const stockBefore = Number(product.stock_current ?? 0)
       const qty         = Number(item.quantity)
-      const stockAfter  = Math.max(0, stockBefore - qty)
+      const stockAfter  = stockBefore - qty  // Allow negative (backorder) — dashboard will alert
 
       ops.push({
         table: 'stock_movements',
@@ -311,7 +311,8 @@ export function useRemitoActions() {
     if (!remito) throw new Error('Remito no encontrado')
 
     const now = new Date().toISOString()
-    const paidAmount = Number(amount ?? remito.total)
+    const paidAmount = Math.min(Number(amount ?? remito.total), Number(remito.total))
+    if (paidAmount <= 0) throw new Error('El monto de cobro debe ser mayor a 0')
     const ops = []
 
     const updatedRemito = {

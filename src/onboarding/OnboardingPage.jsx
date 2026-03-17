@@ -30,11 +30,11 @@ import GuidedTour       from './GuidedTour'
 // Módulos por rubro para pasar al tour (fallback si el preset no está cargado aún)
 const MODULES_BY_RUBRO = {
   correlon:            ['dashboard','stock','clientes','remitos','cuenta_corriente','agenda_entregas','caja','reportes'],
-  gastronomia:         ['dashboard','mesas','comandas','menu','caja','reservas','stock','reportes'],
-  abogacia:            ['dashboard','expedientes','honorarios','agenda_vencimientos','partes','reportes'],
-  medicina:            ['dashboard','pacientes','historia_clinica','turnos','consultas','reportes'],
-  retail:              ['dashboard','productos','ventas','clientes','stock','caja','reportes'],
-  servicios_generales: ['dashboard','clientes','presupuestos','trabajos','agenda','cobros','reportes'],
+  gastronomia:         ['dashboard','stock','remitos','clientes','caja','reportes'],
+  abogacia:            ['dashboard','clientes','remitos','caja','reportes'],
+  medicina:            ['dashboard','clientes','remitos','caja','reportes'],
+  retail:              ['dashboard','stock','remitos','clientes','caja','reportes'],
+  servicios_generales: ['dashboard','clientes','remitos','caja','reportes'],
 }
 
 export default function OnboardingPage() {

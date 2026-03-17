@@ -157,9 +157,10 @@ function NegocioTab() {
     try {
       const updatedSettings = { ...currentSettings, [field]: form[field] }
       await updateTenant({ settings: updatedSettings })
-      console.log(`[Configuracion] Guardado: ${field}`)
     } catch (err) {
       console.error('[Configuracion] Error guardando:', err.message)
+      // Importar toast dinámicamente para no agregar dependencia innecesaria al bundle
+      import('../../shared/ui/Toast').then(m => m.toast.error('Error al guardar. Intentá de nuevo.'))
     } finally {
       setSaving(false)
     }

@@ -118,9 +118,12 @@ export default function RemitoForm({ onClose }) {
   // ── Validación ────────────────────────────────────────────
 
   function validate() {
-    if (!entityId)                     return 'Seleccioná un cliente.'
-    if (items.some(it => !it.description)) return 'Todos los ítems deben tener descripción.'
+    if (!entityId)                        return 'Seleccioná un cliente.'
+    if (items.some(it => !it.description))return 'Todos los ítems deben tener descripción.'
     if (items.some(it => Number(it.quantity) <= 0)) return 'Todos los ítems deben tener cantidad mayor a 0.'
+    if (items.some(it => isNaN(Number(it.unit_price)) || Number(it.unit_price) < 0)) return 'Precio unitario inválido.'
+    if (Number(discount || 0) > subtotal) return 'El descuento no puede superar el subtotal.'
+    if (total <= 0 && subtotal > 0)       return 'El total debe ser mayor a 0.'
     return null
   }
 

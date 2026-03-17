@@ -57,7 +57,15 @@ export default function RemitosPage() {
   }, [location.state])
 
   const remitos = useRemitos({ status: activeTab, search })
+  const allRemitos = useRemitos({ status: 'all' })
   const { confirmRemito, deliverRemito, cancelRemito } = useRemitoActions()
+
+  // Conteo por estado para las tabs
+  const statusCounts = (allRemitos ?? []).reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] || 0) + 1
+    acc.all = (acc.all || 0) + 1
+    return acc
+  }, {})
 
   // Mapa de nombres de clientes para mostrar en tabla
   const entityNames = useLiveQuery(
@@ -133,6 +141,13 @@ export default function RemitosPage() {
             `}
           >
             {tab.label}
+            {statusCounts[tab.key] > 0 && (
+              <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                activeTab === tab.key ? 'bg-white/25' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {statusCounts[tab.key]}
+              </span>
+            )}
           </button>
         ))}
       </div>

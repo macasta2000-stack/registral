@@ -50,6 +50,8 @@ export default function AdminPage() {
   const [selectedTenant, setSelectedTenant] = useState(null)
   const [tenantDetail, setTenantDetail]     = useState(null)
   const [detailLoading, setDetailLoading]   = useState(false)
+  const [search, setSearch]                 = useState('')
+  const [filterRubro, setFilterRubro]       = useState('all')
 
   // ── Fetch admin data ──
   const loadData = useCallback(async () => {
@@ -196,17 +198,54 @@ export default function AdminPage() {
         )}
 
         {/* ── TENANT LIST ── */}
+        {(() => {
+          const q = search.toLowerCase()
+          const filtered = tenants.filter(t => {
+            if (filterRubro !== 'all' && t.rubro !== filterRubro) return false
+            if (q) {
+              const name = (t.settings?.business_name || t.name || '').toLowerCase()
+              const email = (t.owner_email || '').toLowerCase()
+              return name.includes(q) || email.includes(q) || (t.rubro || '').includes(q)
+            }
+            return true
+          })
+
+          return (
         <div className="bg-white rounded-2xl border border-gray-100">
-          <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">
-              Todos los negocios ({tenants.length})
-            </h3>
-            <button
-              onClick={loadData}
-              className="text-xs text-amber-600 font-medium hover:underline"
-            >
-              Actualizar
-            </button>
+          <div className="px-5 py-4 border-b border-gray-50 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Negocios ({filtered.length}{filtered.length !== tenants.length ? ` de ${tenants.length}` : ''})
+              </h3>
+              <button
+                onClick={loadData}
+                className="text-xs text-amber-600 font-medium hover:underline"
+              >
+                Actualizar
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar por nombre, email o rubro..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 bg-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+              </div>
+              <select
+                value={filterRubro}
+                onChange={e => setFilterRubro(e.target.value)}
+                className="rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                <option value="all">Todos los rubros</option>
+                {Object.entries(RUBRO_LABELS).filter(([k]) => !k.includes('-')).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Desktop table */}
@@ -224,7 +263,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {tenants.map(t => (
+                {filtered.map(t => (
                   <tr
                     key={t.id}
                     className={`hover:bg-amber-50/50 transition cursor-pointer ${
@@ -281,7 +320,7 @@ export default function AdminPage() {
 
           {/* Mobile cards */}
           <div className="md:hidden divide-y divide-gray-50">
-            {tenants.map(t => (
+            {filtered.map(t => (
               <button
                 key={t.id}
                 onClick={() => viewTenant(t.id)}
@@ -308,6 +347,8 @@ export default function AdminPage() {
             ))}
           </div>
         </div>
+          )
+        })()}
 
         {/* ── TENANT DETAIL MODAL ── */}
         {selectedTenant && (
