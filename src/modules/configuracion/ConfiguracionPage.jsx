@@ -306,19 +306,26 @@ function CuentaTab() {
 
     setPwdLoading(true)
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      const updatePromise = supabase.auth.updateUser({ password: newPassword })
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 10000)
+      )
+      const { error } = await Promise.race([updatePromise, timeoutPromise])
       if (error) throw error
 
       setNewPassword('')
       setConfirmPassword('')
       setPwdSuccess(true)
-      console.log('[Configuracion] Contrasena actualizada')
 
       // Clear success message after 3 seconds
       setTimeout(() => setPwdSuccess(false), 3000)
     } catch (err) {
-      setPwdError(err.message || 'Error al cambiar la contrasena.')
-      console.error('[Configuracion] Error cambiando contrasena:', err.message)
+      const msg = err.message || ''
+      if (msg === 'timeout') {
+        setPwdError('La solicitud tardó demasiado. Verificá tu conexión e intentá de nuevo.')
+      } else {
+        setPwdError(msg || 'Error al cambiar la contraseña.')
+      }
     } finally {
       setPwdLoading(false)
     }

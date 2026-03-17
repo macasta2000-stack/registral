@@ -81,20 +81,28 @@ export default function ResetPasswordPage() {
 
     setSubmitting(true)
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
-      })
+      // Add timeout to prevent hanging forever
+      const updatePromise = supabase.auth.updateUser({ password })
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 10000)
+      )
 
+      const { error: updateError } = await Promise.race([updatePromise, timeoutPromise])
       if (updateError) throw updateError
       setSuccess(true)
 
       // Redirect to dashboard after 2 seconds
       setTimeout(() => navigate('/dashboard', { replace: true }), 2000)
     } catch (err) {
-      if (err.message?.includes('same_password')) {
+      const msg = err.message || ''
+      if (msg === 'timeout') {
+        setError('La solicitud tardó demasiado. Verificá tu conexión e intentá de nuevo.')
+      } else if (msg.includes('same_password')) {
         setError('La nueva contraseña debe ser diferente a la anterior.')
+      } else if (msg.includes('session_not_found') || msg.includes('not authenticated')) {
+        setError('Tu sesión expiró. Pedí un nuevo link de recuperación.')
       } else {
-        setError(err.message || 'Error al actualizar la contraseña. Intentá de nuevo.')
+        setError(msg || 'Error al actualizar la contraseña. Intentá de nuevo.')
       }
     } finally {
       setSubmitting(false)
